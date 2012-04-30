@@ -1,0 +1,19 @@
+diff --git a/dovecot/conf.d/10-master.conf b/dovecot/conf.d/10-master.conf
+index f0e79ab..019c1fd 100644
+--- a/dovecot/conf.d/10-master.conf
++++ b/dovecot/conf.d/10-master.conf
+@@ -85,9 +85,11 @@ service auth {
+   }
+ 
+   # Postfix smtp-auth
+-  #unix_listener /var/spool/postfix/private/auth {
+-  #  mode = 0666
+-  #}
++  unix_listener /var/spool/postfix/private/auth {
++    mode = 0660
++    user = postfix
++    group = postfix
++  }
+ 
+   # Auth process is run as this user.
+   #user = $default_internal_user

@@ -1,0 +1,43 @@
+#! /bin/bash
+
+if [[ -z "$1" || $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
+	echo "Usage:  linode_api <api_action> [parameters]"
+	echo "  @param string api_action  the method the API server should call"
+	echo "  @param string parameters  the URI query of key value pairs"
+	echo ""
+	echo "Calls the Linode API."
+	echo ""
+	echo "Author: Daniel Convissor <danielc@analysisandsolutions.com>"
+	echo "License: http://www.analysisandsolutions.com/software/license.htm"
+	echo "http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory"
+	exit 1
+fi
+
+api_action=$1
+parameters=$2
+
+api_key=REPLACE_API_KEY
+
+uri="https://api.linode.com/?api_responseformat=json\
+&api_key=$api_key&api_action=$api_action&$parameters"
+
+response=`curl -s "$uri"`
+if [ $? -ne 0 ] ; then
+	echo "ERROR: Linode API curl call failed." 1>&2
+	exit 1
+fi
+
+if [ -z "$response" ] ; then
+	echo "ERROR: Linode API returned nothing." 1>&2
+	exit 1
+fi
+
+if [[ "$response" == *'"ERRORCODE"'* ]] ; then
+	echo "ERROR: Linode API returned an error." 1>&2
+	# Send response to STDOUT and STDERR so end users can do what they want.
+	echo "$response" 1>&2
+	echo "$response"
+	exit 1
+fi
+
+echo "$response"

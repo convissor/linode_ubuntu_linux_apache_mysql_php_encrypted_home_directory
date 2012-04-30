@@ -1,0 +1,31 @@
+#! /bin/bash
+
+if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
+	echo "Usage:  do not call this script directly"
+	echo ""
+	echo "Adds links in decrypted home directories."
+	echo ""
+	echo "Author: Daniel Convissor <danielc@analysisandsolutions.com>"
+	echo "License: http://www.analysisandsolutions.com/software/license.htm"
+	echo "http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory"
+	exit 1
+fi
+
+# Wanted to do this in adduser.local but can't.  Home has already been
+# encrypted but still can't ssh in with a command because the means to
+# decrypt the directory has not been finalized by the adduser process
+# yet.  This is the case at least in Ubuntu 12.04 / Precise.
+
+user_mail_dir="REPLACE_MAIL_DIR/$USER"
+user_connection_info_dir="REPLACE_CONNECTION_INFO_DIR/$USER"
+user_ssh_dir="REPLACE_SSH_AUTH_KEY_DIR/$USER"
+
+ln -s "$user_connection_info_dir" "$HOME/connection-info" \
+	&& ln -s "$user_mail_dir/.spamassassin" "$HOME/.spamassassin" \
+	&& ln -s "$user_ssh_dir/authorized_keys" "$HOME/.ssh/authorized_keys"
+if [ $? -ne 0 ] ; then
+	echo "ERROR: setting up links in decrypted home dir had a problem."
+	exit 1
+fi
+
+rm "$HOME/.need-to-make-links"

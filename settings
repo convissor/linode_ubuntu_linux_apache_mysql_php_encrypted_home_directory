@@ -1,0 +1,58 @@
+# The configuration options needed for the installer system
+#
+# Author: Daniel Convissor <danielc@analysisandsolutions.com>
+# License: http://www.analysisandsolutions.com/software/license.htm
+# http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
+
+# ADJUST THESE SETTINGS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+host=YOURS
+domain=YOURS
+is_main_server_for_domain=1
+
+mail_server=$domain
+has_reverse_dns=1
+
+# Default values.  Creating additional sites/domains asks what to do.
+does_web_server_need_ssl=1
+self_sign_ssl_cert=0
+needs_db=1
+
+network_interface=eth0
+
+ipv4=YOURS
+ipv4_netmask=YOURS
+ipv4_gateway=YOURS
+ipv4_dns="YOURS"
+
+ipv6=YOURS
+ipv6_netmask=64
+ipv6_gateway=YOURS
+ipv6_dns="YOURS"
+
+admin_user=YOURS
+regular_user=YOURS
+root_emails_to=$regular_user
+
+continent=YOURS
+city=YOURS
+
+# Linode API key and machine ID.
+linode_id=YOURS
+api_key=YOURS
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+# Yeah, this is simplistic, but it's better than nothing.
+if [[ "$api_key" = YOURS ]] ; then
+	echo "ERROR: You have not configured everything in the 'settings' file!"
+	exit 1
+fi
+
+function ask_to_proceed() {
+	echo "> > > > >  $1 DONE"
+
+	# Uncomment the remaining lines if need to ask whether to proceed
+	# after each step.
+	#echo -n "Hit CTRL-C to stop or ENTER to continue... "
+	#read -e
+}

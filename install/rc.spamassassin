@@ -1,0 +1,61 @@
+# A Procmail recipe for SpamAssassin
+#
+# Put this before rc.vacation but after everything else.
+#
+# Sets and returns the SPAMC_RESULT variable so the spamc outcome can be
+# queried without having to slog through the headers over and over.
+#
+# Inspired by /net/local/filters/rc.spamassassin on panix.com.
+#
+# Author: Daniel Convissor <danielc@analysisandsolutions.com>
+# License: http://www.analysisandsolutions.com/software/license.htm
+# http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
+
+SPAMC_RESULT = "Failed!"
+MAXSIZE = 1048576
+
+:0
+* > $MAXSIZE
+{
+	:0fw
+	| formail -i "X-Spam-Checker-Version: not processed, message size exceeds spamc size limit"
+	SWITCHRC
+}
+
+:0fW
+| /usr/bin/spamc -s $MAXSIZE
+SASTATUS=$?
+
+# If last attempt succeeded, set $SPAMC_RESULT for convenience.
+:0
+* SASTATUS ?? ^^0^^
+* ^X-Spam-Status: \/(Yes|No), (hits|score)=-?[0-9.]+ required=-?[0-9.]+
+{ SPAMC_RESULT = "$MATCH" }
+
+# If the message is flagged as spam...  If the score is over 10 and $DEV_NULL
+# is set and not empty, deliver it to $DEV_NULL.  Else if $SPAM_BOX is set and
+# not empty, deliver to $SPAM_BOX.  Otherwise, let caller dispose of message.
+:0
+* SPAMC_RESULT ?? Yes
+{
+	# Provide locking in case the user sets $DEV_NULL to a file.
+	:0:
+	* SPAMC_RESULT ?? ^^Yes, score=([1-9][0-9]|[1-9][0-9][0-9])
+	* DEV_NULL ?? .
+	$DEV_NULL
+
+	# Workaround SpamAssassin bug that does not pad score.
+	# https://bugs.launchpad.net/ubuntu/+source/spamassassin/+bug/1006447
+	# https://issues.apache.org/SpamAssassin/show_bug.cgi?id=6651
+	:0
+	* SPAMC_RESULT ?? ^^Yes, score=[0-9]\.
+	{
+		:0 f hw
+		* $ ^Subject: +\/.*
+		| formail -I "Subject: 0$MATCH"
+	}
+
+	:0:
+	* SPAM_BOX ?? .
+	$SPAM_BOX
+}

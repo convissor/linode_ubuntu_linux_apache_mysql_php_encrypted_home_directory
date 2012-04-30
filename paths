@@ -1,0 +1,56 @@
+# Paths and file names needed by the installer system
+#
+# Author: Daniel Convissor <danielc@analysisandsolutions.com>
+# License: http://www.analysisandsolutions.com/software/license.htm
+# http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
+
+adduser_script=/usr/local/sbin/adduser.local
+adduser_links_script=/usr/local/sbin/adduser.links
+
+aliases_file=/etc/aliases
+
+# User dirs will be created below here.
+connection_info_dir=/home/.connect
+
+dkim_dir=/etc/opendkim
+dkim_key_dir="$dkim_dir/keys"
+dkim_conf=/etc/opendkim.conf
+dkim_default=/etc/default/opendkim
+
+etc_profile=/etc/profile
+
+interfaces_file=/etc/network/interfaces
+
+iptables_file=/etc/iptables/rules.v4
+ip6tables_file=/etc/iptables/rules.v6
+
+bin_dir=/usr/local/bin
+sbin_dir=/usr/local/sbin
+
+# User dirs will be created below here.
+mail_dir=/var/mail
+# Items here will be copied into each new user's mail dir.
+mail_skel_dir=/etc/skel-mail
+
+php_src_dir=/usr/local/src/php
+php_config_file_path=/etc/php
+
+postfix_dir=/etc/postfix
+# A map of local users permitted to send emails using <user>@$domain.
+postfix_mydomain_map="$postfix_dir/mydomain_maps"
+# A map of local users to their domains OTHER than $domain.
+postfix_virtual_alias_map="$postfix_dir/virtual_alias_maps"
+
+procmail_dir=/etc/procmail
+
+# User dirs will be created below here.
+ssh_auth_key_dir=/home/.ssh
+
+ssl_cert_dir=/etc/ssl/localcerts
+
+# A place for users to upload via SCP / SFTP.
+transfer_dir=/transfer
+
+# Domain dirs will be created below here.
+web_dir=/var/www
+web_log_dir=/var/log/www

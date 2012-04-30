@@ -1,0 +1,38 @@
+#! /bin/bash
+
+if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
+	echo "Usage:  nm [user]"
+	echo "  @param bool user  name of the user to check mail for."
+	echo "         Default is the user calling the script."
+	echo ""
+	echo "Counts new messages in each Maildir directory the current user has."
+	echo ""
+	echo "Author: Daniel Convissor <danielc@analysisandsolutions.com>"
+	echo "License: http://www.analysisandsolutions.com/software/license.htm"
+	echo "http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory"
+	exit 1
+fi
+
+
+mail_dir="REPLACE_MAIL_DIR"
+if [ -n "$1" ] ; then
+	mail_dir+="/$1/Maildir"
+else
+	mail_dir+="/$USER/Maildir"
+fi
+
+
+if [ ! -d "$mail_dir" ] ; then
+	echo "ERROR: $mail_dir does not exist"
+	exit 1
+fi
+
+find "$mail_dir" -name new |
+while read dir ; do
+	count=`ls -1 "$dir" | wc -l`
+	if [ $count -gt 0 ] ; then
+		dir=${dir%/new}
+		dir=${dir##*/}
+		printf "%5d %s\n" $count "$dir"
+	fi
+done

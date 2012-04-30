@@ -1,0 +1,387 @@
+#! /bin/bash
+
+if [[ -z "$4" || $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
+	echo "Usage:  adduser.local <user> <uid> <gid> <home>"
+	echo ""
+	echo "NOTE: This script is automatically called by adduser."
+	echo ""
+	echo "Author: Daniel Convissor <danielc@analysisandsolutions.com>"
+	echo "License: http://www.analysisandsolutions.com/software/license.htm"
+	echo "http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory"
+	exit 1
+fi
+
+user=$1
+uid=$2
+gid=$3
+home=$4
+
+if [ ! -d "$home" ] ; then
+	# Using --no-create-home, so skip this script.
+	exit
+fi
+
+host=REPLACE_HOST
+domain=REPLACE_DOMAIN
+
+if [ -n "$NEW_USERS_DOMAIN" ] ; then
+	via_new_doman=1
+	users_domain=$NEW_USERS_DOMAIN
+else
+	via_new_doman=0
+	users_domain=$domain
+	echo -n "Domain for this user's email account: [$users_domain]: "
+	read -e
+	if [ -n "$REPLY" ] ; then
+		users_domain=$REPLY
+	fi
+fi
+
+
+# SAVE PRIOR CHANGES, IF ANY ==============================
+
+cd /etc && git add --all && git commit -qam "save before adduser"
+
+
+# TRANSFER DIR ============================================
+
+transfer_dir="REPLACE_TRANSFER_DIR"
+user_transfer_dir="$transfer_dir/$user"
+
+if [ ! -d "$transfer_dir" ] ; then
+	mkdir -p "$transfer_dir" \
+		&& chmod 751 "$transfer_dir"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: setting up transfer dir had a problem."
+		exit 1
+	fi
+fi
+
+mkdir "$user_transfer_dir" \
+	&& chmod 700 "$user_transfer_dir" \
+	&& chown -R $user:$user "$user_transfer_dir"
+if [ $? -ne 0 ] ; then
+	echo "ERROR: setting up user transfer dir had a problem."
+	exit 1
+fi
+
+
+# MAIL DIRS ===============================================
+
+mail_dir="REPLACE_MAIL_DIR"
+user_mail_dir="$mail_dir/$user"
+mail_skel_dir="REPLACE_MAIL_SKEL_DIR"
+
+if [ ! -d "$mail_dir" ] ; then
+	mkdir -p "$mail_dir" \
+		&& chmod 751 "$mail_dir"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: setting up mail dir had a problem."
+		exit 1
+	fi
+fi
+
+mkdir -p "$user_mail_dir" \
+	&& cp -r "$mail_skel_dir"/* "$mail_skel_dir"/.[a-z]* "$user_mail_dir" \
+	&& ln -s "$user_mail_dir/.spamassassin" "$home/.spamassassin" \
+	&& chown -R $user:$user "$user_mail_dir"
+if [ $? -ne 0 ] ; then
+	echo "ERROR: setting up mail user dir had a problem."
+	exit 1
+fi
+
+find "$user_mail_dir" -type d -exec chmod 700 {} \; \
+	&& find "$user_mail_dir" -type f -exec chmod 600 {} \;
+if [ $? -ne 0 ] ; then
+	echo "ERROR: chmod user mail dir had a problem."
+	exit 1
+fi
+
+
+# SSH KEYS ================================================
+
+connection_info_dir="REPLACE_CONNECTION_INFO_DIR"
+user_connection_info_dir="$connection_info_dir/$user"
+
+if [ ! -d "$connection_info_dir" ] ; then
+	mkdir -p "$connection_info_dir" \
+		&& chmod 751 "$connection_info_dir"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: setting up connection_info dir had a problem."
+		exit 1
+	fi
+fi
+
+mkdir -m 2750 "$user_connection_info_dir" \
+	&& chown root:$user "$user_connection_info_dir"
+if [ $? -ne 0 ] ; then
+	echo "ERROR: setting connection info dir had a problem."
+	exit 1
+fi
+
+key_domain=$host.$users_domain
+key_base=id_rsa-$key_domain
+key_file="$user_connection_info_dir/$key_base"
+user_ssh_dir="REPLACE_SSH_AUTH_KEY_DIR/$user"
+user_auth_keys="$user_ssh_dir/authorized_keys"
+
+if [ ! -d "$user_ssh_dir" ] ; then
+	mkdir -p -m 700 "$user_ssh_dir"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: making ssh key dir had a problem."
+		exit 1
+	fi
+fi
+chown -R $user:$user "$user_ssh_dir"
+if [ $? -ne 0 ] ; then
+	echo "ERROR: owning ssh key dir had a problem."
+	exit 1
+fi
+
+if [ -f "$user_auth_keys" ] ; then
+	needs_keys=0
+else
+	echo -n "Does this user need a login shell? [Y|n]: "
+	read -e
+	if [[ -z "$REPLY" || "$REPLY" == y || "$REPLY" == Y ]] ; then
+		needs_keys=1
+	else
+		needs_keys=0
+	fi
+fi
+
+if [ $needs_keys -eq 1 ] ; then
+	cd "$user_connection_info_dir" \
+		&& ssh-keygen -t rsa -C $user@$key_domain -f $key_base \
+		&& chmod 600 $key_base* \
+		&& chown $user:$user $key_base* \
+		&& mv $key_base.pub "$user_auth_keys"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: setting up ssh keys had a problem."
+		exit 1
+	fi
+
+	subject="$users_domain SSH key"
+
+	rsa_fp=`ssh-keygen -l -f /etc/ssh/ssh_host_rsa_key \
+		| sed -E 's/^[^ ]+ ([^ ]+) .*$/\1/'`
+	dsa_fp=`ssh-keygen -l -f /etc/ssh/ssh_host_dsa_key \
+		| sed -E 's/^[^ ]+ ([^ ]+) .*$/\1/'`
+
+# ---------------------------
+mutt -n -s "$subject" -a "$key_file" -- "$user" <<EOKEY
+
+Hi:
+
+Attached is your _private_ key for logging in to the server via SSH.
+
+You must do three things immediately to keep the server secure:
+1) Download the key to your computer.
+2) Delete this email.
+3) Go to your email Trash / Deleted Messages folder and delete this
+email from there, so it is permanently removed.
+
+Keep the key file secure.  Do not give it to anyone else.  If other people
+need access to your work on your website, let me know and I can set up
+an account for them.
+
+The password for using the key is the same as your login password.
+
+Make sure to verify our server's fingerprint.  SSH shows it to you and
+asks for confirmation during your first login.  The value must match one
+of these:
+    RSA: $rsa_fp
+    DSA: $dsa_fp
+
+If SSH ever asks you to confirm the fingerprint again, say NO and do not
+log in.  That scenario indicates a security problem.  Contact me right
+away.  While this should never happen, it's good to be prepared.
+
+LINUX, BSD, UNIX
+----------------
+You know what to do.  If not, follow the Mac directions, below.
+
+MAC
+---
+* Save the attached file to the "~/.ssh" directory.
+* Open up the Terminal application (Searchlight "terminal").
+* Paste in the following commands:
+    echo "Host $users_domain" >> ~/.ssh/config
+    echo "IdentityFile ~/.ssh/$key_base" >> ~/.ssh/config
+    chmod 700 ~/.ssh
+    chmod 600 ~/.ssh/*
+    ssh $user@$users_domain
+
+WINDOWS
+-------
+* Go here: http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
+* Download "putty.exe", "pscp.exe", and "pageant.exe".
+* Follow these instructions: http://www.hostknox.com/tutorials/ssh/putty
+* Then put "$users_domain" into the "Saved Sessions" input box and click the
+"Save" button
+* Click the "Open" button.
+
+Welcome!
+EOKEY
+# ---------------------------
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: mailing private key had a problem."
+		exit 1
+	fi
+fi
+
+
+# POSTFIX =================================================
+
+postfix_mydomain_map="REPLACE_POSTFIX_MYDOMAIN_MAP"
+postfix_virtual_alias_map="REPLACE_POSTFIX_VIRTUAL_ALIAS_MAP"
+
+if [[ $via_new_doman -eq 0 && "$users_domain" != "$domain" ]] ; then
+	echo "" >> "$postfix_virtual_alias_map" \
+		&& echo "$user@$users_domain $user" >> "$postfix_virtual_alias_map" \
+		&& postmap "$postfix_virtual_alias_map"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: virtual alias mapping had a problem."
+		exit 1
+	fi
+fi
+
+echo -n "May they use $user@$domain as an address? [N|y]: "
+read -e
+if [[ "$REPLY" == y || "$REPLY" == Y ]] ; then
+	echo "$user@$domain $user" > "$postfix_mydomain_map" \
+		&& postmap "$postfix_mydomain_map"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: editing mydomain map had a problem."
+		exit 1
+	fi
+fi
+
+
+# EXPLAIN HOW TO GET EMAIL ================================
+
+loop_again=1
+while [ $loop_again -eq 1 ] ; do
+	echo -n "Outside email address to send the welcome message to: "
+	read -e
+	if [ -z "$REPLY" ] ; then
+		echo "ERROR: You silly goat! Now enter that email address..."
+		loop_again=1
+	else
+		loop_again=0
+	fi
+done
+
+# -------------------------------------
+sendmail "$REPLY" <<EOWELCOME
+To: $user
+From: root
+Subject: welcome to $users_domain
+
+Howdy!
+
+Thanks for signing up for hosting and/or email with me.  This email contains
+the settings your email program needs to read and send messages.  Further
+login and configuration information you may need, if any, has been sent to
+your $users_domain email address.
+
+IMPORTANT INFORMATION
+=====================
+
+Outgoing Mail Must Use Our Server
+---------------------------------
+WARNING:  All mail addressed as "@$users_domain" MUST
+use our outgoing mail servers for sending mail.  This is a spam prevention
+measure.
+
+Spam
+----
+Spammy looking emails are automatically put in a separate inbox named,
+oddly enough, ".Spam".  Please check it regularly because sometimes the
+spam filter miscategorizes legitimate email.
+
+Each message is scored, with higher scores meaning the message is spammier.
+The score is placed at the beginning of the subject line.  We suggest
+adjusting your email reader to sort messages in this folder by subject.
+Doing so puts the least spammy messages at the top of the list, making it
+easy to spot miscategorized mails.  We automatically delete messages with
+scores of 10 or more.
+
+Please check and delete spams on regular basis.  To protect the system from
+being overwhelmed, we will automatically delete messages in the Spam
+folder that are over two weeks old.
+
+Trash
+-----
+Many email clients move deleted messages to the trash rather than actually
+deleting them.  By default, the iPhone and mutt put them in a folder named
+"Deleted Messages".
+
+Some email clients automatically expunge old messages from the trash box.
+In case your email client does not, we will automatically delete messages
+in the Deleted Messages folder that are over two weeks old.
+
+
+SETTINGS FOR YOUR EMAIL PROGRAMS
+================================
+
+Basic Settings for All Email Programs
+-------------------------------------
+    Server/Mailbox Type:  IMAP
+    Email Address:  $user@$users_domain
+    Name:  <whatever you want>
+    Incoming Mail Server  AND  Outgoing Mail Server:
+        Host Name:  $domain
+        User Name:  $user
+        Password:  <the password we agreed upon>
+
+If your program asks whether to use TLS (or SSL) connections, say yes.
+
+Specific Example, Using iPhone with iOS 5.1
+--------------------------------------------
+* Settings | Mail, Contacts, Calendars | Add Account
+* Scroll down and select "Other"
+* Add Mail Account
+* Fill in:
+    Name:   <whatever you want>
+    Email:  $user@$users_domain
+    Password:  <the password we agreed upon>
+    Description:  <whatever you want>
+* Next
+* Make sure the IMAP button (not the POP button) is selected at the top
+* Scroll down and enter the following in both the "Incoming Mail Server"
+and "Outgoing Mail Server" sections:
+    Host Name:  $domain
+    User Name:  $user
+    Password:  <the password we agreed upon>
+               (the Incoming section copies it from the prior step)
+* Hit RETURN after filling out the Outgoing Mail Server's password
+* The phone then verifies the settings and briefly puts check marks next
+to each field.  If you get an error message, you probalby have a typo in
+one of the fields.  Check all values and reenter the passwords.
+
+Android
+-------
+We recommend people with Android devices use K-9 Mail app.  It provides
+easy configuration and access, particularly for users with multiple email
+accounts.  https://code.google.com/p/k9mail/
+
+Shell
+-----
+If you are reading mail via a login shell on our server, mutt is the
+mail user agent we have installed.  To check for new mail in all of your
+folders in your Maildir, we've created the "nm" (new mail) command.
+
+Enjoy!
+EOWELCOME
+# -------------------------------------
+if [ $? -ne 0 ] ; then
+	echo "ERROR: mailing welcome message had a problem."
+	exit 1
+fi
+
+cd /etc && git add --all && git commit -qam "adduser: $user"
+
+# Do something after git commit to prevent this script from returning 1
+# when there is nothing to commit.
+echo "adduser.local DONE"

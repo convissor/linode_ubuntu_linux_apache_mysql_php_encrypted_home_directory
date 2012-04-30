@@ -1,0 +1,50 @@
+#! /bin/bash
+
+if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
+	echo "Usage:  linode_reboot [delay]"
+	echo "  @param int delay  the minutes to wait before rebooting"
+	echo ""
+	echo "Tells Linode to reboot this server."
+	echo ""
+	echo "Author: Daniel Convissor <danielc@analysisandsolutions.com>"
+	echo "License: http://www.analysisandsolutions.com/software/license.htm"
+	echo "http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory"
+	exit 1
+fi
+
+if [ -n "$1" ] ; then
+	delay=$1
+else
+	delay=0
+fi
+
+api_script=REPLACE_API_SCRIPT
+linode_id=REPLACE_LINODE_ID
+
+
+echo "SYSTEM WILL REBOOT IN $delay MINUTES!" | wall
+
+if [ $delay -gt 0 ] ; then
+	sleep $((delay * 60))
+fi
+
+# Get the job done for now by hard coding the ID number.
+response=`"$api_script" "linode.reboot" "LinodeID=$linode_id"`
+if [ $? -ne 0 ] ; then
+	echo "ERROR: calling API had a problem." 1>&2
+	exit 1
+fi
+exit
+
+
+# TODO: flesh out the logic for getting this machine's LinodeID.
+
+response=`"$api_script" "linode.list" ""`
+id=`echo "$response" | sed -E 's/.*"DomainID"\s*:\s*([0-9]+).*/\1/gi'`
+
+# If response has one LinodeID, great, skip to reboot command.
+
+	# If has multiple LinodeID's, loop through each ID, and grep our IP address.
+	response=`"$api_script" "linode.ip.list" "LinodeID=$linode_id"`
+
+response=`"$api_script" "linode.reboot" "LinodeID=$linode_id"`

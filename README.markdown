@@ -1,6 +1,6 @@
-= Linode Ubuntu Linux Apache MySQL PHP Installation and Administration Utilities=
+# Linode Ubuntu Linux Apache MySQL PHP Installation and Administration Utilities
 
-===  Security  ===
+###  Security  ###
 * Encrypted home directories
 * Login via SSH authorized keys only
 * Creates admin user, disables `root` login
@@ -13,13 +13,13 @@
   and gives logged in users a 10 minute warning when reboots happen.
   (Unattended Upgrades version 0.76 just reboots withot warning.)
 
-===  Web  ===
+###  Web  ###
 * MySQL
 * Apache mpm-itk, with each site having its own user and group
 * Memcache
 * PHP built from source
 
-===  Mail  ===
+###  Mail  ###
 * Postfix with SASL authentication
 * Dovecot IMAP server over SSL
 * Sender Policy Framework (SPF)
@@ -28,13 +28,13 @@
 * SpamAssassin
 * Mutt
 
-===  Misc  ===
+###  Misc  ###
 * Puts `/etc` under Git version control and commits changes at each step
 * Git, Mercurial, Subversion, CVS
 * SQLite 2 and 3
 * Network Time Protocol (NTP)
 
-===  Administration Scripts Written in Bash  ===
+###  Administration Scripts Written in Bash  ###
 * `linode_api`: command line interface for the Linode API
 * `linode_reboot`: a stand-in for `shutdown -r` because Linodes can only
   be reboted via the Linode Manager / API.
@@ -61,7 +61,7 @@
 	+ Postfix virtual alias
 
 
-==  To Do  ==
+##  To Do  ##
 * Investigate what of this can be done using Puppet or Chef
 * Use `other_vhosts_access.log` as the log for each host and split the
   incoming entries on the fly instead of using `split-logfile`.
@@ -69,7 +69,7 @@
 * Log rotation (Apache virtual hosts, Procmail, etc).
 
 
-==  Installation  ==
+##  Installation  ##
 * In the Linode Manager:
 	+ Create a new linode.
 	+ Pick "Ubuntu 12.04 LTS 64bit" as the distribution.
@@ -82,7 +82,7 @@ git clone git://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encryp
 cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
 git checkout -b my12.04 12.04
 
-# Go through ALL of the settings.
+\# Go through ALL of the settings.
 vim settings
 
 cd ~/.ssh
@@ -95,13 +95,16 @@ git commit -am 'My settings.'
 
 cd ..
 scp -r linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory \
-	root@<your linode's IP>:.
+	root@<your linode's IP>
 ssh root@<your linode's IP>
+</pre>
+
 * Now, on the server, do the following:
+<pre>
 cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
 ~/certs
 
-# This step will reboot the server.
+\# This step will reboot the server.
 ./1st-step_timezone_iptables-persistent_unattended-upgrade_static-ip-address.sh
 </pre>
 

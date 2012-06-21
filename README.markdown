@@ -45,6 +45,9 @@
 * `generate-certificate.sh`: produces SSL/TLS certficates, keys and requests
 * `append-postconf.sh`: appends a value to a Postfix configuration key
 * `gpw`: generates strong, though not user memorable, passwords
+* `adduser.local`: generates an SSH authorized key, sets up skeleton files
+  and directories, configures the mail server and sends IMAP configuration
+  instructions to the user.
 * `new-domain.sh`:
 	+ IPv4 and IPv6 put into network configuration, if needed
 	+ TLS/SSL certificate creation
@@ -56,9 +59,6 @@
 	+ DKIM setup
 	+ DNS setup, including DKIM and SPF data
 	+ Postfix virtual alias
-* `adduser.local`: generates an SSH authorized key, sets up skeleton files
-  and directories, configures the mail server and sends IMAP configuration
-  instructions to the user.
 
 
 ##  To Do  ##
@@ -77,7 +77,7 @@
 	+ Boot it.
 
 * On your local box:
-<code>
+<pre>
 git clone git://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory.git
 cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
 git checkout -b my12.04 12.04
@@ -103,15 +103,15 @@ cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
 
 # This step will reboot the server.
 ./1st-step_timezone_iptables-persistent_unattended-upgrade_static-ip-address.sh
-</code>
+</pre>
 
 * From your local box:
-<code>
+<pre>
 ssh root@<your linode's IP>
-</code>
+</pre>
 
 * Finally, on the server, call:
-<code>
+<pre>
 cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
 ./2nd-step_run-sub-scripts.sh
-</code>
+</pre>

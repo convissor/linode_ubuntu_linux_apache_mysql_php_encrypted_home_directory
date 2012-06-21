@@ -77,44 +77,46 @@
 	+ Boot it.
 
 * On your local box:
-<pre>
-git clone git://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory.git
-cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
-git checkout -b my12.04 12.04
+	<pre>
+	git clone git://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory.git
+	cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
+	git checkout -b my12.04 12.04
 
-\# Go through ALL of the settings.
-vim settings
+	\# Go through ALL of the settings.
+	vim settings
 
-cd ~/.ssh
-ssh-keygen -t rsa -C <you>@<domain> -f <key name> \
-chmod 600 <key name>*
-cd -
-cp ~/.ssh/<key name>.pub install/authorized_keys
+	cd ~/.ssh
+	ssh-keygen -t rsa -C <you>@<domain> -f <key name> \
+	chmod 600 <key name>*
+	echo "IdentityFile ~/.ssh/<key name>" >> config
+	cd -
+	cp ~/.ssh/<key name>.pub install/authorized_keys
 
-git commit -am 'My settings.'
+	git commit -am 'My settings.'
 
-cd ..
-scp -r linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory \
-	root@<your linode's IP>
-ssh root@<your linode's IP>
-</pre>
+	cd ..
+	scp -r linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory \
+		root@<your linode's IP>
+	ssh root@<your linode's IP>
+	</pre>
 
-* Now, on the server, do the following:
-<pre>
-cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
-~/certs
+* Now, on the server, do the following. Note, this will reboot the server
+at the end of the process.
+	<pre>
+	cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
+	~/certs
 
-\# This step will reboot the server.
-./1st-step_timezone_iptables-persistent_unattended-upgrade_static-ip-address.sh
-</pre>
+	./1st-step_timezone_iptables-persistent_unattended-upgrade_static-ip-address.sh
+	</pre>
 
-* From your local box:
-<pre>
-ssh root@<your linode's IP>
-</pre>
+* From your local box, log in to the server again:
+	<pre>
+	ssh <admin user name from settings file>@<your linode's IP>
+	</pre>
 
 * Finally, on the server, call:
-<pre>
-cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
-./2nd-step_run-sub-scripts.sh
-</pre>
+	<pre>
+	sudo -i
+	cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
+	./2nd-step_run-sub-scripts.sh
+	</pre>

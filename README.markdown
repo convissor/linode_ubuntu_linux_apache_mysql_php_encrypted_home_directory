@@ -1,5 +1,10 @@
 # Linode Ubuntu Linux Apache MySQL PHP Installation and Administration Utilities
 
+This projetct provides Bash scripts for setting up and administering
+Ubuntu 12.04 (Precise) LAMP servers on Linode instances.  It's designed
+to support encrypted home directories.
+
+
 ###  Security  ###
 * Encrypted home directories
 * Login via SSH authorized keys only

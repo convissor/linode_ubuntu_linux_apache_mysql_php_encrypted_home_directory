@@ -77,7 +77,8 @@
 	+ Boot it.
 
 * On your local box:
-	<pre>
+
+<pre>
 	git clone git://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory.git
 	cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
 	git checkout -b my12.04 12.04
@@ -86,38 +87,42 @@
 	vim settings
 
 	cd ~/.ssh
-	ssh-keygen -t rsa -C \<you>@\<domain> -f \<key name> \
-	chmod 600 \<key name>*
-	echo "IdentityFile ~/.ssh/\<key name>" >> config
+	ssh-keygen -t rsa -C [you]@[domain] -f [key name] \
+	chmod 600 [key name]*
+	echo "IdentityFile ~/.ssh/[key name]" >> config
 	cd -
-	cp ~/.ssh/\<key name>.pub install/authorized_keys
+	cp ~/.ssh/[key name].pub install/authorized_keys
 
 	git commit -am 'My settings.'
 
 	cd ..
 	scp -r linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory \
-		root@\<your linode's IP>
+		root@[your linode's IP]
 
-	ssh root@\<your linode's IP>
-	</pre>
+	ssh root@[your linode's IP]
+</pre>
 
 * Now, on the server, do the following. Note, this will reboot the server
 at the end of the process.
-	<pre>
-	cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
-	~/certs
 
+<pre>
+	cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
 	./1st-step_timezone_iptables-persistent_unattended-upgrade_static-ip-address.sh
-	</pre>
+</pre>
 
 * From your local box, log in to the server again:
-	<pre>
-	ssh \<admin user name from settings file>@\<your linode's IP>
-	</pre>
+
+<pre>
+	ssh <admin user name from settings file>@<your linode's IP>
+</pre>
 
 * Finally, on the server, call:
-	<pre>
-	sudo -i
+
+<pre>
 	cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
 	./2nd-step_run-sub-scripts.sh
-	</pre>
+</pre>
+
+* From this point forward, the `root` user is prevented from logging in.
+You'll need to SSH in using the names you proveded in the `settings` file
+for the `admin_user` and `regular_user` values.

@@ -82,22 +82,23 @@
 	cd linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory
 	git checkout -b my12.04 12.04
 
-	\# Go through ALL of the settings.
+	# Go through ALL of the settings.
 	vim settings
 
 	cd ~/.ssh
-	ssh-keygen -t rsa -C <you>@<domain> -f <key name> \
-	chmod 600 <key name>*
-	echo "IdentityFile ~/.ssh/<key name>" >> config
+	ssh-keygen -t rsa -C \<you>@\<domain> -f \<key name> \
+	chmod 600 \<key name>*
+	echo "IdentityFile ~/.ssh/\<key name>" >> config
 	cd -
-	cp ~/.ssh/<key name>.pub install/authorized_keys
+	cp ~/.ssh/\<key name>.pub install/authorized_keys
 
 	git commit -am 'My settings.'
 
 	cd ..
 	scp -r linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory \
-		root@<your linode's IP>
-	ssh root@<your linode's IP>
+		root@\<your linode's IP>
+
+	ssh root@\<your linode's IP>
 	</pre>
 
 * Now, on the server, do the following. Note, this will reboot the server
@@ -111,7 +112,7 @@ at the end of the process.
 
 * From your local box, log in to the server again:
 	<pre>
-	ssh <admin user name from settings file>@<your linode's IP>
+	ssh \<admin user name from settings file>@\<your linode's IP>
 	</pre>
 
 * Finally, on the server, call:

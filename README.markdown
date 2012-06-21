@@ -113,7 +113,7 @@ at the end of the process.
 * From your local box, log in to the server again:
 
 <pre>
-	ssh <admin user name from settings file>@<your linode's IP>
+	ssh [root]@[your linode's IP]
 </pre>
 
 * Finally, on the server, call:

@@ -85,7 +85,7 @@ fi
 # -newkey  Create a new certificate request and a new private key.
 
 if [ $self_sign_ssl_cert -eq 1 ] ; then
-	openssl req -x509 -newkey rsa:2048 -nodes -keyout $name.key -out $name.crt
+	openssl req -x509 -days 3650 -newkey rsa:2048 -nodes -keyout $name.key -out $name.crt
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: key generation had a problem."
 		exit 1

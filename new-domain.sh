@@ -343,7 +343,7 @@ cd "$server_web_dir" \
 	&& cp -R "$repo_dir/install/backups" \
 		"$repo_dir/install/utilities" . \
 	&& chmod 770 backups utilities utilities/* \
-	&& chmod 660 backups/.[a-z]* utilities/.[a-z]*
+	&& chmod 660 backups/.[a-z]* utilities/.[a-z]* \
 	&& ln -s "../../utilities/post-update" \
 		"$server_web_dir/.git/hooks/post-update" \
 	&& ln -s "../../utilities/pre-receive" \

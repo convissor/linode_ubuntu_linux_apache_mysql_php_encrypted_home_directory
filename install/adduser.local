@@ -141,9 +141,9 @@ fi
 if [ -f "$user_auth_keys" ] ; then
 	needs_keys=0
 else
-	echo -n "Does this user need a login shell? [Y|n]: "
+	echo -n "Is this user going to do SSH, SFTP, shell logins, etc? [y|N]: "
 	read -e
-	if [[ -z "$REPLY" || "$REPLY" == y || "$REPLY" == Y ]] ; then
+	if [[ "$REPLY" == y || "$REPLY" == Y ]] ; then
 		needs_keys=1
 	else
 		needs_keys=0

@@ -142,27 +142,6 @@ fi
 cd /etc && git add --all && git commit -qam "save before new-domain.sh"
 
 
-# DNS INFORMATION =========================================
-
-# Only do when calling for additional domains.
-# Initial server installation already did this step.
-if [[ "$1" != "settings" ]] ; then
-	dns_skip_questions=y
-	source "$repo_dir/dns.sh"
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: dns.sh had a problem."
-		exit 1
-	fi
-fi
-
-echo "-----------------------------------------------------"
-echo "If this is the primary/only domain using $ipv4, set up Reverse DNS."
-echo "Linode Manager | Linodes | machine | Remote Access ..."
-echo "Public IP's | Reverse DNS"
-echo "$ipv4 -> $email_domain"
-echo "-----------------------------------------------------"
-
-
 # USER ====================================================
 
 export NEW_USERS_DOMAIN=$email_domain
@@ -247,6 +226,27 @@ if [ ! -d "$domain_dkim_key_dir" ] ; then
 
 	ask_to_proceed "new domain mail configuration"
 fi
+
+
+# DNS INFORMATION =========================================
+
+# Only do when calling for additional domains.
+# Initial server installation already did this step.
+if [[ "$1" != "settings" ]] ; then
+	dns_skip_questions=y
+	source "$repo_dir/dns.sh"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: dns.sh had a problem."
+		exit 1
+	fi
+fi
+
+echo "-----------------------------------------------------"
+echo "If this is the primary/only domain using $ipv4, set up Reverse DNS."
+echo "Linode Manager | Linodes | machine | Remote Access ..."
+echo "Public IP's | Reverse DNS"
+echo "$ipv4 -> $email_domain"
+echo "-----------------------------------------------------"
 
 
 # MYSQL ===================================================

@@ -142,6 +142,27 @@ fi
 cd /etc && git add --all && git commit -qam "save before new-domain.sh"
 
 
+# DNS INFORMATION =========================================
+
+# Only do when calling for additional domains.
+# Initial server installation already did this step.
+if [[ "$1" != "settings" ]] ; then
+	dns_skip_questions=y
+	source "$repo_dir/dns.sh"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: dns.sh had a problem."
+		exit 1
+	fi
+fi
+
+echo "-----------------------------------------------------"
+echo "If this is the primary/only domain using $ipv4, set up Reverse DNS."
+echo "Linode Manager | Linodes | machine | Remote Access ..."
+echo "Public IP's | Reverse DNS"
+echo "$ipv4 -> $email_domain"
+echo "-----------------------------------------------------"
+
+
 # USER ====================================================
 
 export NEW_USERS_DOMAIN=$email_domain
@@ -188,18 +209,43 @@ fi
 ask_to_proceed "new domain user additions"
 
 
-# TLS CERTIFICATE =========================================
+# MAIL ====================================================
 
-# Only do when calling for additional domains.
-# Initial server installation already did this step.
-if [[ "$1" != "settings" && $does_web_server_need_ssl -eq 1 ]] ; then
-	"$repo_dir/generate-certificate.sh" "$cert_name" "$self_sign_ssl_cert"
+domain_dkim_key_dir="$dkim_key_dir/$email_domain"
+
+if [ ! -d "$domain_dkim_key_dir" ] ; then
+	# DKIM ---------------------------------------
+
+	source "$repo_dir/include/dkim.sh"
+
+	service opendkim restart
 	if [ $? -ne 0 ] ; then
-		echo "ERROR: generate-certificate.sh had a problem."
+		echo "ERROR: opendkim restart had a problem."
 		exit 1
 	fi
 
-	ask_to_proceed "new domain certificate generation"
+
+	# POSTFIX ------------------------------------
+
+	if [ "$email_domain" != "$mail_server" ] ; then
+		echo "$email_domain" >> "$postfix_dir/virtual_alias_domains" \
+			&& echo "" >> "$postfix_virtual_alias_map" \
+			&& echo "postmaster@$email_domain postmaster" >> "$postfix_virtual_alias_map" \
+			&& echo "$user@$email_domain $user" >> "$postfix_virtual_alias_map" \
+			&& postmap "$postfix_virtual_alias_map"
+		if [ $? -ne 0 ] ; then
+			echo "ERROR: virtual alias mapping had a problem."
+			exit 1
+		fi
+
+		service postfix reload
+		if [ $? -ne 0 ] ; then
+			echo "ERROR: postfix reload had a problem."
+			exit 1
+		fi
+	fi
+
+	ask_to_proceed "new domain mail configuration"
 fi
 
 
@@ -306,6 +352,21 @@ EOMY
 	fi
 
 	ask_to_proceed "new domain mysql database and user creation"
+fi
+
+
+# TLS CERTIFICATE =========================================
+
+# Only do when calling for additional domains.
+# Initial server installation already did this step.
+if [[ "$1" != "settings" && $does_web_server_need_ssl -eq 1 ]] ; then
+	"$repo_dir/generate-certificate.sh" "$cert_name" "$self_sign_ssl_cert"
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: generate-certificate.sh had a problem."
+		exit 1
+	fi
+
+	ask_to_proceed "new domain certificate generation"
 fi
 
 
@@ -513,46 +574,6 @@ fi
 ask_to_proceed "new domain apache creation"
 
 
-# MAIL ====================================================
-
-domain_dkim_key_dir="$dkim_key_dir/$email_domain"
-
-if [ ! -d "$domain_dkim_key_dir" ] ; then
-	# DKIM ---------------------------------------
-
-	source "$repo_dir/include/dkim.sh"
-
-	service opendkim restart
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: opendkim restart had a problem."
-		exit 1
-	fi
-
-
-	# POSTFIX ------------------------------------
-
-	if [ "$email_domain" != "$mail_server" ] ; then
-		echo "$email_domain" >> "$postfix_dir/virtual_alias_domains" \
-			&& echo "" >> "$postfix_virtual_alias_map" \
-			&& echo "postmaster@$email_domain postmaster" >> "$postfix_virtual_alias_map" \
-			&& echo "$user@$email_domain $user" >> "$postfix_virtual_alias_map" \
-			&& postmap "$postfix_virtual_alias_map"
-		if [ $? -ne 0 ] ; then
-			echo "ERROR: virtual alias mapping had a problem."
-			exit 1
-		fi
-
-		service postfix reload
-		if [ $? -ne 0 ] ; then
-			echo "ERROR: postfix reload had a problem."
-			exit 1
-		fi
-	fi
-
-	ask_to_proceed "new domain mail configuration"
-fi
-
-
 # TELL THE USER WHERE STUFF IS ============================
 
 # -------------------------------------
@@ -587,27 +608,6 @@ if [ $? -ne 0 ] ; then
 fi
 
 ask_to_proceed "new domain user notification"
-
-
-# DNS INFORMATION =========================================
-
-# Only do when calling for additional domains.
-# Initial server installation already did this step.
-if [[ "$1" != "settings" ]] ; then
-	dns_skip_questions=y
-	source "$repo_dir/dns.sh"
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: dns.sh had a problem."
-		exit 1
-	fi
-fi
-
-echo "-----------------------------------------------------"
-echo "If this is the primary/only domain using $ipv4, set up Reverse DNS."
-echo "Linode Manager | Linodes | machine | Remote Access ..."
-echo "Public IP's | Reverse DNS"
-echo "$ipv4 -> $email_domain"
-echo "-----------------------------------------------------"
 
 
 # SAVE CHANGES ============================================

@@ -107,6 +107,7 @@ fi
 	--with-bz2 \
 	--with-curl \
 	--with-gd \
+	--with-jpeg-dir=/usr/lib \
 	--enable-mbstring \
 	--with-mcrypt \
 	--with-mysql=mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd \

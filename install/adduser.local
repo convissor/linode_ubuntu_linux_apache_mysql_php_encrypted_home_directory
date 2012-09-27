@@ -57,7 +57,7 @@ if [ ! -d "$transfer_dir" ] ; then
 	fi
 fi
 
-mkdir "$user_transfer_dir" \
+mkdir -p "$user_transfer_dir" \
 	&& chmod 700 "$user_transfer_dir" \
 	&& chown -R $user:$user "$user_transfer_dir"
 if [ $? -ne 0 ] ; then
@@ -112,7 +112,7 @@ if [ ! -d "$connection_info_dir" ] ; then
 	fi
 fi
 
-mkdir -m 2750 "$user_connection_info_dir" \
+mkdir -p -m 2750 "$user_connection_info_dir" \
 	&& chown root:$user "$user_connection_info_dir"
 if [ $? -ne 0 ] ; then
 	echo "ERROR: setting connection info dir had a problem."

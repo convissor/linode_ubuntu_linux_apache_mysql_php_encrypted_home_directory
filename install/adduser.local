@@ -330,12 +330,20 @@ Basic Settings for All Email Programs
     Server/Mailbox Type:  IMAP
     Email Address:  $user@$users_domain
     Name:  <whatever you want>
-    Incoming Mail Server  AND  Outgoing Mail Server:
+    Incoming Mail Server:
         Host Name:  $domain
+        Port:  993
         User Name:  $user
         Password:  <the password we agreed upon>
-
-If your program asks whether to use TLS (or SSL) connections, say yes.
+        Connection Security:  SSL/TLS
+        Authentication Method:  Normal Password
+    Outgoing Mail Server:
+        Host Name:  $domain
+        Port:  587
+        User Name:  $user
+        Password:  <the password we agreed upon>
+        Connection Security:  STARTTLS
+        Authentication Method:  Normal Password
 
 Specific Example, Using iPhone with iOS 5.1
 --------------------------------------------

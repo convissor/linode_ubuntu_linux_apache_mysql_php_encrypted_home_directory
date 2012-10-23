@@ -38,9 +38,14 @@ else
 fi
 
 
-# SAVE PRIOR CHANGES, IF ANY ==============================
+# CHECK THAT THE REPO IS CLEAN ============================
 
-cd /etc && git add --all && git commit -qam "save before adduser"
+cd /etc
+if [ -n "$(git status --porcelain)" ] ; then
+	echo "Uncommitted changes exist in /etc."
+	echo "Commit them first then call this script again."
+	exit 1
+fi
 
 
 # TRANSFER DIR ============================================

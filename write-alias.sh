@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 if [[ -z $2 || $1 == "-h" || $1 == "--help" ]] ; then
 	echo "Usage:  write-alias.sh <from> <to>"
@@ -23,6 +23,16 @@ if [ -z "$repo_dir" ] ; then
 fi
 
 
+# CHECK THAT THE REPO IS CLEAN ============================
+
+cd /etc
+if [ -n "$(git status --porcelain)" ] ; then
+	echo "Uncommitted changes exist in /etc."
+	echo "Commit them first then call this script again."
+	exit 1
+fi
+
+
 # GET TO WORK =============================================
 
 if [ ! -f "$aliases_file" ] ; then
@@ -40,4 +50,4 @@ fi
 
 newaliases
 
-cd /etc && git commit -qam "write-alias.sh $from $to"
+git commit -qam "write-alias.sh $from $to"

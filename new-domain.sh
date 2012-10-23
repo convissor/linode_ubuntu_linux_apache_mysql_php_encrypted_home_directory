@@ -12,6 +12,16 @@ if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
 fi
 
 
+# CHECK THAT THE REPO IS CLEAN ============================
+
+cd /etc
+if [ -n "$(git status --porcelain)" ] ; then
+	echo "Uncommitted changes exist in /etc."
+	echo "Commit them first then call this script again."
+	exit 1
+fi
+
+
 # GET SETTINGS ============================================
 
 if [ -z "$repo_dir" ] ; then
@@ -135,11 +145,6 @@ if [ -d "$server_web_dir" ] ; then
 	echo "This server had already been set up."
 	exit 1
 fi
-
-
-# SAVE PRIOR CHANGES, IF ANY ==============================
-
-cd /etc && git add --all && git commit -qam "save before new-domain.sh"
 
 
 # USER ====================================================

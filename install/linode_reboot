@@ -21,6 +21,11 @@ fi
 api_script=REPLACE_API_SCRIPT
 linode_id=REPLACE_LINODE_ID
 
+if [ ! -x "$api_script" ] ; then
+	user=`whoami`
+	echo "You, $user, don't have permission to run $api_script"
+	exit 1
+fi
 
 echo "SYSTEM WILL REBOOT IN $delay MINUTES!" | wall
 

@@ -31,6 +31,24 @@ if [ -z "$repo_dir" ] ; then
 fi
 
 
+# FUNCTIONS ===============================================
+
+function explain_startssl() {
+	echo ""
+	cat $name.csr
+	echo "Submit the signing request, above, to https://www.startssl.com/"
+	echo "Save the resulting certificate as '$ssl_cert_dir/$name.crt'."
+	echo "DO THIS NOW! (via screen or separate shell login)"
+	echo -n "Press ENTER to continue..."
+	read -e
+}
+
+function finish_process() {
+	chmod 400 $name.*
+	cd /etc && git add --all && git commit -qam "generate-certificate.sh $name"
+}
+
+
 # GET TO WORK =============================================
 
 if [[ ! -d $ssl_cert_dir ]] ; then
@@ -58,8 +76,19 @@ if [ $? -ne 0 ] ; then
 fi
 
 if [ -f "$name.key" ] ; then
-	echo "This certificate already exists. Skipping generation process."
-	exit
+	echo "This certificate already exists."
+	echo -n "Do you want to resubmit that signing request? [Y|n] "
+	read -e
+	if [[ -z $REPLY || $REPLY == y || $REPLY == Y ]] ; then
+		explain_startssl
+		finish_process
+		service postfix reload
+		service apache2 reload
+		exit
+	else
+		echo "Okay.  No action will be taken.  Exiting now."
+		exit 1
+	fi
 else
 	touch $name.key
 fi
@@ -104,15 +133,7 @@ else
 	# openssl req -noout -text -in $name.csr
 	# openssl x509 -noout -text -in $name.crt
 
-	echo ""
-	cat $name.csr
-	echo "Submit the signing request, above, to https://www.startssl.com/"
-	echo "Save the resulting certificate as '$ssl_cert_dir/$name.crt'."
-	echo "DO THIS NOW! (via screen or separate shell login)"
-	echo -n "Press ENTER to continue..."
-	read -e
+	explain_startssl
 fi
 
-chmod 400 $name.*
-
-cd /etc && git add --all && git commit -qam "generate-certificate.sh $name"
+finish_process

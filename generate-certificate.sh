@@ -45,13 +45,13 @@ function explain_startssl() {
 
 function finish_process() {
 	chmod 400 $name.*
-	cd /etc && git add --all && git commit -qam "generate-certificate.sh $name"
+	cd "$ssl_cert_dir" && git add --all && git commit -qam "generate-certificate.sh $name"
 }
 
 
 # GET TO WORK =============================================
 
-if [[ ! -d $ssl_cert_dir ]] ; then
+if [[ ! -d "$ssl_cert_dir" ]] ; then
 	mkdir -p -m 700 "$ssl_cert_dir"
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: mkdir had a problem."

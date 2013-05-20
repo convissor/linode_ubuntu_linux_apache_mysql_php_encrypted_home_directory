@@ -80,6 +80,7 @@ if [ -f "$name.key" ] ; then
 	echo -n "Do you want to resubmit that signing request? [Y|n] "
 	read -e
 	if [[ -z $REPLY || $REPLY == y || $REPLY == Y ]] ; then
+		chmod 600 $name.*
 		explain_startssl
 		finish_process
 		service postfix reload

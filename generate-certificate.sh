@@ -75,7 +75,19 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-if [ -f "$name.key" ] ; then
+if [ -z $2 ] ; then
+	echo -n "Should this SSL certificate be self signed? [Y|n] "
+	read -e
+	if [[ -z $REPLY || $REPLY == y || $REPLY == Y ]] ; then
+		self_sign_ssl_cert=1
+	else
+		self_sign_ssl_cert=0
+	fi
+else
+	self_sign_ssl_cert=$2
+fi
+
+if [[ -f "$name.key" && $self_sign_ssl_cert -eq 0 ]] ; then
 	echo "This certificate already exists."
 	echo -n "Do you want to resubmit that signing request? [Y|n] "
 	read -e
@@ -95,18 +107,6 @@ else
 fi
 
 chmod 600 $name.*
-
-if [ -z $2 ] ; then
-	echo -n "Should this SSL certificate be self signed? [Y|n] "
-	read -e
-	if [[ -z $REPLY || $REPLY == y || $REPLY == Y ]] ; then
-		self_sign_ssl_cert=1
-	else
-		self_sign_ssl_cert=0
-	fi
-else
-	self_sign_ssl_cert=$2
-fi
 
 
 # req = X.509 Certificate Signing Request (CSR) Management.

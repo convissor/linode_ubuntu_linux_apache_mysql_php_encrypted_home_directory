@@ -1,15 +1,84 @@
 #! /bin/bash
 
-if [[ $1 == "-h" || $1 == "--help" ]] ; then
-	echo "Usage:  gpw"
+function usage() {
+	echo "Usage:  gpw [-l <length>] [-p]"
 	echo ""
-	echo "Generate password."
+	echo "Generates a random password."
 	echo ""
-	echo "Author: Daniel Convissor <danielc@analysisandsolutions.com>"
-	echo "License: http://www.analysisandsolutions.com/software/license.htm"
-	echo "http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory"
+	echo "Options:"
+	echo "  -l  length (default 30)"
+	echo "  -p  no punctuation"
+	echo ""
+	echo "Author: Daniel Convissor <dconvissor@analysisandsolutions.com>"
 	exit 1
+}
+
+if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
+	usage
 fi
 
+# Characters that can be clicked on as a block in GNOME terminal.
+punct="~@#%&_=+,./?-"
+upper="A-Z"
+lower="a-z"
+num="0-9"
+alnum="$upper$lower$num"
 
-echo `dd if=/dev/urandom count=10 2>/dev/null | md5sum -b | sed 's/ .*//'`
+
+# Default values.
+len=30
+permitted="$alnum$punct"
+
+# Parse input.
+while getopts ":l:p" OPTION ; do
+	case $OPTION in
+		l)
+			len=$OPTARG
+			if ! [[ "$len" =~ ^[0-9]+$ ]] ; then
+				echo "ERROR:  -l must be an integer" 1>&2
+				exit 1
+			fi
+			if [[ $len -lt 4 ]] ; then
+				echo "ERROR:  -l must be >= 4." 1>&2
+				exit 1
+			fi
+			if [[ $len -lt 10 ]] ; then
+				echo "PLEASE BE SECURE:  make -l >= 10." 1>&2
+			fi
+			;;
+		p)
+			# Punctuation is not permitted.
+			permitted=$alnum
+			;;
+		?)
+			usage
+			;;
+	esac
+done
+
+
+# Do the work...
+
+redo=1
+while [[ $redo -eq 1 ]] ; do
+	redo=0
+	out="$(< /dev/urandom tr -dc $permitted | head -c $len;)"
+
+	if [[ "$permitted" != "$alnum"
+		&& $(expr "$out" : ".*[$punct]") -eq 0 ]]
+	then
+		# Need punctuation, but none in there yet, try again.
+		redo=1
+	elif [[ $(expr "$out" : ".*[$lower]") -eq 0 ]] ; then
+		# No lower case characters yet, try again.
+		redo=1
+	elif [[ $(expr "$out" : ".*[$upper]") -eq 0 ]] ; then
+		# No upper case characters yet, try again.
+		redo=1
+	elif [[ $(expr "$out" : ".*[$num]") -eq 0 ]] ; then
+		# No num case characters yet, try again.
+		redo=1
+	fi
+done
+
+echo "$out"

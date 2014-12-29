@@ -97,6 +97,10 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
+# Prevent POODLE attacks.
+file=/etc/apache2/mods-available/ssl.conf
+sed s/"SSLProtocol.*"/"SSLProtocol All -SSLv2 -SSLv3"/g -i "$file"
+
 file=/etc/apache2/ports.conf
 echo "NameVirtualHost *:443" >> "$file"
 

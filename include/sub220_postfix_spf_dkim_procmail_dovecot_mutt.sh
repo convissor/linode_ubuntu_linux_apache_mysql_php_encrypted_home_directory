@@ -138,6 +138,9 @@ postmap "$postfix_virtual_alias_map"
 postconf -e "smtp_tls_security_level = may"
 postconf -e "smtpd_tls_security_level = may"
 
+# Prevent POODLE attacks.
+postconf -e "smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3"
+
 postconf -e "smtpd_tls_cert_file=$ssl_cert_dir/$cert_name.crt"
 postconf -e "smtpd_tls_key_file=$ssl_cert_dir/$cert_name.key"
 postconf -e "smtpd_recipient_restrictions = permit_mynetworks, reject_unauth_destination"
@@ -380,7 +383,8 @@ cd /etc && git add --all && git commit -qam "$step"
 file=/etc/dovecot/conf.d/10-ssl.conf
 sed -E "s@^#?ssl\s*=.*@ssl = required@g" -i "$file" \
 	&& sed -E "s@^#?ssl_cert\s*=.*@ssl_cert = <$ssl_cert_dir/$cert_name.crt@g" -i "$file" \
-	&& sed -E "s@^#?ssl_key\s*=.*@ssl_key = <$ssl_cert_dir/$cert_name.key@g" -i "$file"
+	&& sed -E "s@^#?ssl_key\s*=.*@ssl_key = <$ssl_cert_dir/$cert_name.key@g" -i "$file" \
+	&& sed -E "s@^#?ssl_cipher_list\s*=.*@ssl_cipher_list = TLSv1@g" -i "$file"
 if [ $? -ne 0 ] ; then
 	echo "ERROR: edit $step $file had a problem."
 	exit 1

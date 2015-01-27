@@ -43,6 +43,12 @@ if [ ! -d "$php_src_dir" ] ; then
 		echo "ERROR: git clone had a problem."
 		exit 1
 	fi
+
+	git checkout -b PHP-5.5 origin/PHP-5.5
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: git checkout had a problem."
+		exit 1
+	fi
 else
 	new_install=0
 
@@ -79,17 +85,17 @@ else
 		exit 1
 	fi
 
+	git checkout PHP-5.5
+	if [ $? -ne 0 ] ; then
+		echo "ERROR: git checkout had a problem."
+		exit 1
+	fi
+
 	git pull --rebase
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: git pull had a problem."
 		exit 1
 	fi
-fi
-
-git checkout PHP-5.4
-if [ $? -ne 0 ] ; then
-	echo "ERROR: git checkout had a problem."
-	exit 1
 fi
 
 ./buildconf --force

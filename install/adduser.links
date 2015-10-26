@@ -8,7 +8,7 @@ if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
 	echo "Author: Daniel Convissor <danielc@analysisandsolutions.com>"
 	echo "License: http://www.analysisandsolutions.com/software/license.htm"
 	echo "http://github.com/convissor/linode_ubuntu_linux_apache_mysql_php_encrypted_home_directory"
-	exit 1
+	exit 101
 fi
 
 # Wanted to do this in adduser.local but can't.  Home has already been
@@ -25,7 +25,7 @@ ln -s "$user_connection_info_dir" "$HOME/connection-info" \
 	&& ln -s "$user_ssh_dir/authorized_keys" "$HOME/.ssh/authorized_keys"
 if [ $? -ne 0 ] ; then
 	echo "ERROR: setting up links in decrypted home dir had a problem."
-	exit 1
+	exit 102
 fi
 
 rm "$HOME/.need-to-make-links"

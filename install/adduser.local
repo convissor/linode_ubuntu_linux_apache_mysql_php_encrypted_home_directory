@@ -44,7 +44,7 @@ cd /etc
 if [ -n "$(git status --porcelain)" ] ; then
 	echo "Uncommitted changes exist in /etc."
 	echo "Commit them first then call this script again."
-	exit 1
+	exit 2
 fi
 
 
@@ -58,7 +58,7 @@ if [ ! -d "$transfer_dir" ] ; then
 		&& chmod 751 "$transfer_dir"
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: setting up transfer dir had a problem."
-		exit 1
+		exit 3
 	fi
 fi
 
@@ -67,7 +67,7 @@ mkdir -p "$user_transfer_dir" \
 	&& chown -R $user:$user "$user_transfer_dir"
 if [ $? -ne 0 ] ; then
 	echo "ERROR: setting up user transfer dir had a problem."
-	exit 1
+	exit 4
 fi
 
 
@@ -82,7 +82,7 @@ if [ ! -d "$mail_dir" ] ; then
 		&& chmod 751 "$mail_dir"
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: setting up mail dir had a problem."
-		exit 1
+		exit 5
 	fi
 fi
 
@@ -92,14 +92,14 @@ mkdir -p "$user_mail_dir" \
 	&& chown -R $user:$user "$user_mail_dir"
 if [ $? -ne 0 ] ; then
 	echo "ERROR: setting up mail user dir had a problem."
-	exit 1
+	exit 6
 fi
 
 find "$user_mail_dir" -type d -exec chmod 700 {} \; \
 	&& find "$user_mail_dir" -type f -exec chmod 600 {} \;
 if [ $? -ne 0 ] ; then
 	echo "ERROR: chmod user mail dir had a problem."
-	exit 1
+	exit 7
 fi
 
 
@@ -113,7 +113,7 @@ if [ ! -d "$connection_info_dir" ] ; then
 		&& chmod 751 "$connection_info_dir"
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: setting up connection_info dir had a problem."
-		exit 1
+		exit 8
 	fi
 fi
 
@@ -121,7 +121,7 @@ mkdir -p -m 2750 "$user_connection_info_dir" \
 	&& chown root:$user "$user_connection_info_dir"
 if [ $? -ne 0 ] ; then
 	echo "ERROR: setting connection info dir had a problem."
-	exit 1
+	exit 9
 fi
 
 key_domain=$host.$users_domain
@@ -134,13 +134,13 @@ if [ ! -d "$user_ssh_dir" ] ; then
 	mkdir -p -m 700 "$user_ssh_dir"
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: making ssh key dir had a problem."
-		exit 1
+		exit 10
 	fi
 fi
 chown -R $user:$user "$user_ssh_dir"
 if [ $? -ne 0 ] ; then
 	echo "ERROR: owning ssh key dir had a problem."
-	exit 1
+	exit 11
 fi
 
 if [ -f "$user_auth_keys" ] ; then
@@ -163,7 +163,7 @@ if [ $needs_keys -eq 1 ] ; then
 		&& mv $key_base.pub "$user_auth_keys"
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: setting up ssh keys had a problem."
-		exit 1
+		exit 12
 	fi
 
 	subject="$users_domain SSH key"
@@ -231,7 +231,7 @@ EOKEY
 # ---------------------------
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: mailing private key had a problem."
-		exit 1
+		exit 13
 	fi
 fi
 
@@ -247,7 +247,7 @@ if [[ $via_new_doman -eq 0 && "$users_domain" != "$domain" ]] ; then
 		&& postmap "$postfix_virtual_alias_map"
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: virtual alias mapping had a problem."
-		exit 1
+		exit 14
 	fi
 fi
 
@@ -258,7 +258,7 @@ if [[ "$REPLY" == y || "$REPLY" == Y ]] ; then
 		&& postmap "$postfix_mydomain_map"
 	if [ $? -ne 0 ] ; then
 		echo "ERROR: editing mydomain map had a problem."
-		exit 1
+		exit 15
 	fi
 fi
 
@@ -390,7 +390,7 @@ EOWELCOME
 # -------------------------------------
 if [ $? -ne 0 ] ; then
 	echo "ERROR: mailing welcome message had a problem."
-	exit 1
+	exit 16
 fi
 
 cd /etc && git add --all && git commit -qam "adduser: $user"

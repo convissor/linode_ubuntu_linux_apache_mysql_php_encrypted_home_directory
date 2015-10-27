@@ -41,10 +41,11 @@ fi
 # CHECK THAT THE REPO IS CLEAN ============================
 
 cd /etc
+
+git commit -qm "adduser: $user (passwd, group, etc)" group group- gshadow gshadow- passwd passwd- shadow shadow-
+
 if [ -n "$(git status --porcelain)" ] ; then
-	echo "Uncommitted changes exist in /etc."
-	echo "Commit them first then call this script again."
-	exit 2
+	git commit -qam "Prior changes found during adduser $user"
 fi
 
 
@@ -393,7 +394,7 @@ if [ $? -ne 0 ] ; then
 	exit 16
 fi
 
-cd /etc && git add --all && git commit -qam "adduser: $user"
+cd /etc && git add --all && git commit -qam "adduser: $user (remainder)"
 
 # Do something after git commit to prevent this script from returning 1
 # when there is nothing to commit.

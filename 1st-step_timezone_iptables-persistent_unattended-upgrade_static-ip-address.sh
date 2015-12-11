@@ -211,7 +211,7 @@ fi
 # Add a few minutes of delay before a reboot required by unattended upgrades.
 # Hard coding it like this is not ideal, but is the only option available.
 file=/usr/bin/unattended-upgrade
-sed "s@\"/sbin/reboot\"])@\"'$sbin_dir/linode_reboot'\", \"10\"]) # Local change!@g" -i "$file"
+sed "s@\"/sbin/reboot\"])@\"$sbin_dir/linode_reboot\", \"10\"]) # Local change!@g" -i "$file"
 
 cd /etc && git add --all && git commit -qam "$step mods"
 

@@ -132,9 +132,9 @@ Action application/x-httpd-php /local-bin/php-cgi
 	Satisfy all
 </Directory>
 
-# Block all directories and files that start with a dot.
-# Prevents access to .git, .svn, .user.ini, etc.
-<DirectoryMatch .*/\..*>
+# Block .git directories and files that start with a dot.
+# Prevents access to .git, .user.ini, etc.
+<DirectoryMatch .*/\.git>
 	Deny from all
 	Satisfy all
 </DirectoryMatch>

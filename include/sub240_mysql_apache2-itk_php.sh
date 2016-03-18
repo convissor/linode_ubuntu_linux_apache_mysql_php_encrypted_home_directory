@@ -35,7 +35,7 @@ file=/etc/mysql/my.cnf
 replace="[client]\\ndefault-character-set = utf8"
 sed s/\\[client\\]/"$replace"/g -i "$file"
 
-replace="[mysqld]\\ncharacter-set-server = utf8\\ncollation-server = utf8_bin\\ndefault-storage-engine = InnoDB\\n"
+replace="[mysqld]\\ncharacter-set-server = utf8\\ncollation-server = utf8_bin\\ndefault-storage-engine = InnoDB\\ninnodb_file_per_table = 1\\n"
 sed s/\\[mysqld\\]/"$replace"/g -i "$file"
 
 service mysql restart

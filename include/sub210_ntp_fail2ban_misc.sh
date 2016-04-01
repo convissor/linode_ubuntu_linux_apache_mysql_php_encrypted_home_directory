@@ -59,11 +59,32 @@ ask_to_proceed "$step"
 step="misc tools"
 step_header "$step"
 
-apt-get -qq -y install dict dict-gcide \
-	antiword links lynx mb2md poppler-utils tofrodos \
-	htop python-software-properties traceroute \
-	git-svn git-cvs gitk subversion subversion-tools cvs mercurial \
-	sqlite3 sqlite3-doc sqlite sqlite-doc
+apt-get -qq -y install \
+	dict \
+	dict-gcide \
+	antiword \
+	links \
+	lynx \
+	\
+	mb2md \
+	poppler-utils \
+	tofrodos \
+	htop \
+	python-software-properties \
+	traceroute \
+	\
+	git-svn \
+	git-cvs \
+	gitk \
+	subversion \
+	subversion-tools \
+	cvs \
+	mercurial \
+	\
+	sqlite3 \
+	sqlite3-doc \
+	sqlite \
+	sqlite-doc
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1

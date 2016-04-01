@@ -48,8 +48,14 @@ if [[ "$api_key" = YOURS ]] ; then
 	exit 1
 fi
 
+function step_header() {
+	echo "> > > > >  $1 START"
+}
+
 function ask_to_proceed() {
 	echo "> > > > >  $1 DONE"
+	echo ""
+	echo ""
 
 	# Uncomment the remaining lines if need to ask whether to proceed
 	# after each step.

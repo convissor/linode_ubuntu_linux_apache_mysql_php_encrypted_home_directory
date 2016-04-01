@@ -23,6 +23,8 @@ fi
 # NTP / Network Time Protocol =============================
 
 step="ntp"
+step_header "$step"
+
 apt-get -qq -y install ntp
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -36,6 +38,8 @@ ask_to_proceed "$step"
 # FAIL2BAN ================================================
 
 step="fail2ban"
+step_header "$step"
+
 apt-get -qq -y install fail2ban
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -53,6 +57,8 @@ ask_to_proceed "$step"
 # MISC ====================================================
 
 step="misc tools"
+step_header "$step"
+
 apt-get -qq -y install dict dict-gcide \
 	antiword links lynx mb2md poppler-utils tofrodos \
 	htop python-software-properties traceroute \

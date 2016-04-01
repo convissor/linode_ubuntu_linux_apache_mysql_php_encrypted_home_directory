@@ -73,6 +73,8 @@ echo -n "Press ENTER to continue..."
 read -e
 
 step="postfix"
+step_header "$step"
+
 apt-get -qq -y install postfix
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -162,6 +164,8 @@ ask_to_proceed "$step"
 # http://www.openspf.org/FAQ/Common_mistakes
 
 step="postfix-policyd-spf-python"
+step_header "$step"
+
 apt-get -qq -y install postfix-policyd-spf-python
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -198,6 +202,8 @@ ask_to_proceed "$step"
 # http://blog.tjitjing.com/index.php/2012/03/guide-to-install-opendkim-for-multiple-domains-with-postfix-and-debian.html
 
 step="opendkim"
+step_header "$step"
+
 apt-get -qq -y install opendkim
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -273,6 +279,8 @@ ask_to_proceed "$step"
 # Install postfix before procmail to keep changesets clean.
 
 step="procmail"
+step_header "$step"
+
 apt-get -qq -y install procmail
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -310,6 +318,8 @@ ask_to_proceed "$step"
 # SPAMASSASSIN --------------------------------------------
 
 step="spamassassin"
+step_header "$step"
+
 apt-get -qq -y install spamassassin
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -373,6 +383,8 @@ ask_to_proceed "$step"
 # http://wiki2.dovecot.org/HowTo/PostfixAndDovecotSASL
 
 step="dovecot"
+step_header "$step"
+
 apt-get -qq -y install dovecot-common dovecot-imapd
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -473,6 +485,8 @@ ask_to_proceed "$step"
 # MUTT ----------------------------------------------------
 
 step="mutt"
+step_header "$step"
+
 apt-get -qq -y install mutt
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."

@@ -41,6 +41,8 @@ fi
 # TRACK ALL CONFIGURATION CHANGES =========================
 
 step="git"
+step_header "$step"
+
 apt-get -qq -y install git-core git-doc
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -70,6 +72,8 @@ ask_to_proceed "$step"
 # TIMEZONE ================================================
 
 step="timezone"
+step_header "$step"
+
 echo "$continent/$city" > /etc/timezone
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step write had a problem."
@@ -94,6 +98,8 @@ echo -n "Press ENTER to continue..."
 read -e
 
 step="iptables-persistent"
+step_header "$step"
+
 apt-get -qq -y install iptables-persistent
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -162,6 +168,8 @@ ask_to_proceed "$step"
 # SOFTWARE UPGRADE ========================================
 
 step="upgrade"
+step_header "$step"
+
 apt-get -qq update && apt-get -qq -y upgrade
 if [ $? -ne 0 ] ; then
 	echo "ERROR: update or upgrade had a problem."
@@ -178,6 +186,8 @@ ask_to_proceed "$step"
 # AUTOMATIC UPGRADES ======================================
 
 step="unattended-upgrades"
+step_header "$step"
+
 apt-get -qq -y install unattended-upgrades
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -227,6 +237,8 @@ ask_to_proceed "$step"
 # https://help.ubuntu.com/12.04/serverguide/network-configuration.html#name-resolution
 
 step="fix resolv.conf"
+step_header "$step"
+
 if [ ! -L /etc/resolv.conf ] ; then
 	if [ -f /etc/resolv.conf ] ; then
 		mv /etc/resolv.conf /run/resolvconf/resolv.conf
@@ -242,6 +254,8 @@ ask_to_proceed "$step"
 # NETWORK CONFIGURATION ===================================
 
 step="networking"
+step_header "$step"
+
 echo "$host" > /etc/hostname
 hostname -F /etc/hostname
 

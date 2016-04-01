@@ -23,6 +23,8 @@ fi
 # MYSQL ===================================================
 
 step="mysql"
+step_header "$step"
+
 apt-get -qq -y install mysql-client mysql-server
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -76,6 +78,8 @@ ask_to_proceed "$step"
 # APACHE HTTPD ============================================
 
 step="apache"
+step_header "$step"
+
 apt-get -qq -y install apache2-mpm-itk apache2-doc apache2-utils \
 	libapache2-mod-xsendfile
 if [ $? -ne 0 ] ; then
@@ -176,6 +180,8 @@ ask_to_proceed "$step"
 # MEMCACHE ================================================
 
 step="memcache"
+step_header "$step"
+
 apt-get -qq -y install memcached
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -189,6 +195,7 @@ ask_to_proceed "$step"
 # PHP =====================================================
 
 step="build-dep php5"
+step_header "$step"
 
 # The following list of dependencies comes from these two commands:
 # Note: add-apt-repository is in the python-software-properties package.
@@ -242,6 +249,8 @@ cd /etc && git add --all && git commit -qam "$step"
 ask_to_proceed "$step"
 
 step="php compile"
+step_header "$step"
+
 mkdir -m 755 "$php_config_file_path"
 if [ $? -ne 0 ] ; then
 	echo "ERROR: setting up $php_config_file_path had a problem."

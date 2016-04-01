@@ -25,6 +25,8 @@ fi
 # PASSWORD STRENGTH ---------------------------------------
 
 step="libpam-passwdqc"
+step_header "$step"
+
 apt-get -qq -y install libpam-passwdqc
 if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
@@ -36,6 +38,7 @@ cd /etc && git add --all && git commit -qam "$step"
 # SSH KEY AUTH --------------------------------------------
 
 step="login via ssh keys only"
+step_header "$step"
 
 chmod 751 /home
 
@@ -92,6 +95,7 @@ cd /etc && git add --all && git commit -qam "$step"
 # SKELETON FILES --------------------------------
 
 step="skeleton files"
+step_header "$step"
 
 mkdir -p "$mail_skel_dir/Maildir/cur" \
          "$mail_skel_dir/Maildir/new" \
@@ -184,6 +188,7 @@ cd /etc && git add --all && git commit -qam "$step"
 # SOFTWARE FOR ENCRYPTING HOME DIRECTORIES ----------------
 
 step="ecryptfs-utils"
+step_header "$step"
 
 apt-get -qq -y install ecryptfs-utils
 if [ $? -ne 0 ] ; then
@@ -202,6 +207,8 @@ fi
 # ADMIN USER ----------------------------------------------
 
 step="admin user"
+step_header "$step"
+
 echo ""
 echo "About to create a new administrative user account."
 echo -n "Press ENTER to continue..."

@@ -80,6 +80,16 @@ apt-get -qq -y install \
 	subversion-tools \
 	cvs \
 	mercurial \
+	bzr \
+	ppa-purge \
+	\
+	autoconf \
+	autoconf-doc \
+	autoconf2.13 \
+	automake1.4 \
+	re2c \
+	build-essential \
+	pkg-config \
 	\
 	sqlite3 \
 	sqlite3-doc \

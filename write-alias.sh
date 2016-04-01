@@ -39,12 +39,15 @@ if [ ! -f "$aliases_file" ] ; then
 	touch "$aliases_file"
 fi
 
+set +e
 grep -Eq "^$from:" "$aliases_file"
 if [ $? -ne 0 ] ; then
 	# Add it.
+	set -e
 	echo "$from: $to" >> "$aliases_file"
 else
 	# Replace it.
+	set -e
 	sed -E "s/^$from:.*/$from: $to/g" -i "$aliases_file"
 fi
 

@@ -30,7 +30,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 ask_to_proceed "$step"
 
@@ -45,7 +45,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 file=/etc/fail2ban/jail.conf
 # Increase lockout length from 10 minutes to 1 day.
@@ -68,6 +68,6 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 ask_to_proceed "$step"

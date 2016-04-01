@@ -617,6 +617,6 @@ ask_to_proceed "new domain user notification"
 
 # SAVE CHANGES ============================================
 
-cd /etc && git add --all && git commit -qam "new-domain.sh: $domain $user"
+cd /etc && git add --all && commit_if_needed "new-domain.sh: $domain $user"
 
 ask_to_proceed "all new domain steps are"

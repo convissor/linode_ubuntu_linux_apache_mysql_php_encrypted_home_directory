@@ -109,7 +109,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 
-cd /etc && git add --all && git commit -qam "install-utilities.sh"
+cd /etc && git add --all && commit_if_needed "install-utilities.sh"
 
 
 # Place this in a loop in case the user mistypes the password.

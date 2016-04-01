@@ -32,7 +32,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 
 # SSH KEY AUTH --------------------------------------------
@@ -89,7 +89,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 
 # SKELETON FILES --------------------------------
@@ -182,7 +182,7 @@ fi
 
 # NOTE: install-utilities.sh puts adduser scripts in place.
 
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 
 # SOFTWARE FOR ENCRYPTING HOME DIRECTORIES ----------------
@@ -228,7 +228,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step pre-alias"
+cd /etc && git add --all && commit_if_needed "$step pre-alias"
 
 # Send root email to the admin user.
 "$repo_dir/write-alias.sh" root "$root_emails_to"
@@ -262,7 +262,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step final"
+cd /etc && git add --all && commit_if_needed "$step final"
 
 echo ""
 echo "ATTENTION: the 'root' account has been disabled."

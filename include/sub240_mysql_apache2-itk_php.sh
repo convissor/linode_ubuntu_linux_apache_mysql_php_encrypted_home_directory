@@ -30,7 +30,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 file=/etc/mysql/my.cnf
 
@@ -46,7 +46,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 # Place this in a loop in case the user mistypes the password.
 loop_again=1
@@ -86,7 +86,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 a2enmod actions rewrite ssl
 if [ $? -ne 0 ] ; then
@@ -172,7 +172,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -187,7 +187,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 ask_to_proceed "$step"
 
@@ -244,7 +244,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 ask_to_proceed "$step"
 
@@ -275,6 +275,6 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"

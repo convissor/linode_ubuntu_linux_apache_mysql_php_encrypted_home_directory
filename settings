@@ -62,3 +62,10 @@ function ask_to_proceed() {
 	#echo -n "Hit CTRL-C to stop or ENTER to continue... "
 	#read -e
 }
+
+function commit_if_needed() {
+	cd /etc
+	if [ -n "$(git status --porcelain)" ] ; then
+		git commit -qam "$1"
+	fi
+}

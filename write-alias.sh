@@ -53,4 +53,4 @@ fi
 
 newaliases
 
-git commit -qam "write-alias.sh $from $to"
+commit_if_needed "write-alias.sh $from $to"

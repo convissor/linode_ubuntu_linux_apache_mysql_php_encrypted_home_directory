@@ -60,7 +60,7 @@ git config --global user.email root@$host.$domain
 
 echo "mtab" >> .gitignore \
 	&& git add --all \
-	&& git commit -qam "$step"
+	&& commit_if_needed "$step"
 if [ $? -ne 0 ] ; then
 	echo "ERROR: git had a problem."
 	exit 1
@@ -87,7 +87,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 
 # IPTABLES ================================================
@@ -105,7 +105,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 dir=`dirname "$iptables_file"`
 if [ ! -d "$dir" ] ; then
@@ -160,7 +160,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -178,7 +178,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -193,7 +193,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 file=/etc/apt/apt.conf.d/50unattended-upgrades
 # Uncomment all origins so all upgrades get installed automatically.
@@ -223,7 +223,7 @@ fi
 file=/usr/bin/unattended-upgrade
 sed "s@\"/sbin/reboot\"])@\"$sbin_dir/linode_reboot\", \"10\"]) # Local change!@g" -i "$file"
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -246,7 +246,7 @@ if [ ! -L /etc/resolv.conf ] ; then
 	ln -s /run/resolvconf/resolv.conf /etc/resolv.conf
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -273,7 +273,7 @@ if [ -n "$ipv6" ] ; then
 	source "$repo_dir/include/hardcode-ip.sh"
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 

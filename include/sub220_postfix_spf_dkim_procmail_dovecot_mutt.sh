@@ -81,7 +81,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 # IP addresses of trusted SMTP clients.  IPv6 must be in brackets.
 mynetworks="127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128"
@@ -153,7 +153,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -171,7 +171,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 # -------------------------------------
 cat >> "$postfix_dir/master.cf" <<EOPFM
@@ -189,7 +189,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -209,7 +209,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 mkdir -p "$dkim_dir/keys" \
 	&& touch "$dkim_dir/Domain" \
@@ -270,7 +270,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -310,7 +310,7 @@ WS=\$SP\$TA
 EOPRC
 # -------------------------------------
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -326,7 +326,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 file=/etc/spamassassin/local.cf
 # -------------------------------------
@@ -371,7 +371,7 @@ fi
 
 # NOTE: install-utilities.sh puts procmail recipe for spamassassin in place.
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -390,7 +390,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 file=/etc/dovecot/conf.d/10-ssl.conf
 sed -E "s@^#?ssl\s*=.*@ssl = required@g" -i "$file" \
@@ -477,7 +477,7 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"
 
@@ -492,7 +492,7 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: $step install had a problem."
 	exit 1
 fi
-cd /etc && git add --all && git commit -qam "$step"
+cd /etc && git add --all && commit_if_needed "$step"
 
 # -------------------------------------
 cat >> /etc/Muttrc <<EOMRC
@@ -526,6 +526,6 @@ EOMRC
 mkdir -m 750 /etc/skel/.mutt
 touch /etc/skel/.mutt/alias
 
-cd /etc && git add --all && git commit -qam "$step mods"
+cd /etc && git add --all && commit_if_needed "$step mods"
 
 ask_to_proceed "$step"

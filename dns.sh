@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
 	echo "Usage:  dns.sh"
@@ -58,85 +58,45 @@ fi
 
 # See if DNS for this domain exists already.
 response=`"$sbin_dir/linode_api" "domain.list"`
-if [ $? -ne 0 ] ; then
-	echo "ERROR: calling API had a problem."
-	exit 1
-fi
 existing_id=`echo $response | sed -E "s/.*\"DomainID\":([0-9]+).*\"$domain\".*/\1/i"`
 
 if [[ ${#existing_id} -lt 20 && ${#existing_id} -gt 0 ]] ; then
 	# Yep, it exists.  Kill it.
 	response=`"$sbin_dir/linode_api" "domain.delete" \
 		"DomainID=$existing_id"`
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: calling API had a problem."
-		exit 1
-	fi
 fi
 
 response=`"$sbin_dir/linode_api" "domain.create" \
 	"Type=master&SOA_Email=postmaster%40$domain&Domain=$domain"`
-if [ $? -ne 0 ] ; then
-	echo "ERROR: calling API had a problem."
-	exit 1
-fi
 id=`echo "$response" | sed -E 's/.*"DomainID"\s*:\s*([0-9]+).*/\1/gi'`
 
 if [ -n "$ipv4" ] ; then
 	response=`"$sbin_dir/linode_api" "domain.resource.create" \
 		"Type=A&Name=$domain&Target=$ipv4&DomainID=$id"`
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: calling API had a problem."
-		exit 1
-	fi
 fi
 
 if [ -n "$ipv6" ] ; then
 	response=`"$sbin_dir/linode_api" "domain.resource.create" \
 		"Type=AAAA&Name=$domain&Target=$ipv6&DomainID=$id"`
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: calling API had a problem."
-		exit 1
-	fi
 fi
 
 response=`"$sbin_dir/linode_api" "domain.resource.create" \
 	"Type=CNAME&Name=www&Target=$domain&DomainID=$id"`
-if [ $? -ne 0 ] ; then
-	echo "ERROR: calling API had a problem."
-	exit 1
-fi
 
 response=`"$sbin_dir/linode_api" "domain.resource.create" \
 	"Type=MX&Target=$mail_server&DomainID=$id"`
-if [ $? -ne 0 ] ; then
-	echo "ERROR: calling API had a problem."
-	exit 1
-fi
 
 domain_dkim_key_dir="$dkim_key_dir/$domain"
 dkim_file="$domain_dkim_key_dir/default.txt"
 if [ -f "$dkim_file" ] ; then
 	# Extract the value section from the DNS formatted file.
 	dkim=`sed -E 's/^.*"([^"]+)".*$/\1/' < "$dkim_file"`
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: reading dkim key had a problem."
-		exit 1
-	fi
 
 	# Encode the value so it doesn't mess up the API URI.
 	dkim="$(perl -MURI::Escape -e 'print uri_escape($ARGV[0]);' "$dkim")"
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: encoding dkim key had a problem."
-		exit 1
-	fi
 
 	response=`"$sbin_dir/linode_api" "domain.resource.create" \
 		"Type=TXT&Target=$dkim&DomainID=$id"`
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: calling API had a problem."
-		exit 1
-	fi
 else
 	echo "=========================="
 	echo "NOTE: Since no DKIM key file exists at '$dkim_file',"
@@ -156,17 +116,9 @@ fi
 
 # Encode the value so it doesn't mess up the API URI.
 spf="$(perl -MURI::Escape -e 'print uri_escape($ARGV[0]);' "$spf")"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: encoding spf value had a problem."
-	exit 1
-fi
 
 response=`"$sbin_dir/linode_api" "domain.resource.create" \
 	"Type=TXT&Target=$spf&DomainID=$id"`
-if [ $? -ne 0 ] ; then
-	echo "ERROR: calling API had a problem."
-	exit 1
-fi
 
 
 ask_to_proceed "DNS record generation"

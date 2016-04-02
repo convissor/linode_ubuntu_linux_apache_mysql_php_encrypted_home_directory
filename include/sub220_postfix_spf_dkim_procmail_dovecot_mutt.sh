@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
 	echo "Usage:  this script is called by 2nd-step_run-sub-scripts.sh"
@@ -40,18 +40,10 @@ if [ -d ~/certs ] ; then
 	mkdir -p -m 700 "$ssl_cert_dir" \
 		&& mv ~/certs/* "$ssl_cert_dir" \
 		&& chmod 400 "$ssl_cert_dir"/*
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: copying certificates had a problem."
-		exit 1
-	fi
 fi
 
 # Generate the certificate if necessary.
 "$repo_dir/generate-certificate.sh" "$cert_name" "$self_sign_ssl_cert"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: generate-certificate.sh had a problem."
-	exit 1
-fi
 
 ask_to_proceed "server TLS certificate generation"
 
@@ -76,10 +68,6 @@ step="postfix"
 step_header "$step"
 
 apt-get -qq -y install postfix
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step"
 
@@ -125,10 +113,6 @@ dpkg-reconfigure -fnoninteractive postfix
 postconf -e "mydestination = $host.$domain, $host, localhost.$domain, localhost$main_domain_comma"
 
 postconf -e "myhostname = $mail_server"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: postconf had a problem."
-	exit 1
-fi
 
 postconf -e "virtual_alias_domains = $postfix_dir/virtual_alias_domains"
 postconf -e "virtual_alias_maps = hash:$postfix_virtual_alias_map"
@@ -148,10 +132,6 @@ postconf -e "smtpd_tls_key_file=$ssl_cert_dir/$cert_name.key"
 postconf -e "smtpd_recipient_restrictions = permit_mynetworks, reject_unauth_destination"
 
 service postfix restart
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step restart had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 
@@ -167,10 +147,7 @@ step="postfix-policyd-spf-python"
 step_header "$step"
 
 apt-get -qq -y install postfix-policyd-spf-python
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 # -------------------------------------
@@ -184,10 +161,6 @@ postconf -e "policy-spf_time_limit = 3600s"
 "$repo_dir/append-postconf.sh" smtpd_recipient_restrictions "check_policy_service unix:private/policy-spf"
 
 service postfix reload
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step posfix reload had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 
@@ -205,10 +178,7 @@ step="opendkim"
 step_header "$step"
 
 apt-get -qq -y install opendkim
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 mkdir -p "$dkim_dir/keys" \
@@ -217,10 +187,6 @@ mkdir -p "$dkim_dir/keys" \
 	&& touch "$dkim_dir/SigningTable" \
 	&& chown -R root:opendkim "$dkim_dir" \
 	&& chmod -R 2750 "$dkim_dir"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: setting up opendkim dir and files had a problem."
-	exit 1
-fi
 
 domain_dkim_key_dir="$dkim_key_dir/$email_domain"
 if [ ! -d "$domain_dkim_key_dir" ] ; then
@@ -229,10 +195,6 @@ fi
 
 dns_skip_questions=y
 source "$repo_dir/dns.sh"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: dns.sh had a problem."
-	exit 1
-fi
 
 echo "" >> "$dkim_conf"
 echo "# MY CUSTOMIZATIONS" >> "$dkim_conf"
@@ -259,16 +221,8 @@ postconf -e "non_smtpd_milters = inet:localhost:8891"
 # Restart was imperfect.  Stop and start to make sure things work.
 service opendkim stop
 service opendkim start
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step start had a problem."
-	exit 1
-fi
 
 service postfix restart
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step posfix restart had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 
@@ -282,10 +236,6 @@ step="procmail"
 step_header "$step"
 
 apt-get -qq -y install procmail
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
 
 # -------------------------------------
 cat > /etc/procmailrc <<EOPRC
@@ -321,10 +271,6 @@ step="spamassassin"
 step_header "$step"
 
 apt-get -qq -y install spamassassin
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step"
 
@@ -364,10 +310,6 @@ file=/etc/spamassassin/v310.pre
 sed -E "s/^#\s*(loadplugin Mail::SpamAssassin::Plugin::TextCat)/\1/g" -i "$file"
 
 sa-update && service spamassassin start
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step start had a problem."
-	exit 1
-fi
 
 # NOTE: install-utilities.sh puts procmail recipe for spamassassin in place.
 
@@ -386,10 +328,7 @@ step="dovecot"
 step_header "$step"
 
 apt-get -qq -y install dovecot-common dovecot-imapd
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 file=/etc/dovecot/conf.d/10-ssl.conf
@@ -397,37 +336,17 @@ sed -E "s@^#?ssl\s*=.*@ssl = required@g" -i "$file" \
 	&& sed -E "s@^#?ssl_cert\s*=.*@ssl_cert = <$ssl_cert_dir/$cert_name.crt@g" -i "$file" \
 	&& sed -E "s@^#?ssl_key\s*=.*@ssl_key = <$ssl_cert_dir/$cert_name.key@g" -i "$file" \
 	&& sed -E "s@^#?ssl_cipher_list\s*=.*@ssl_cipher_list = TLSv1@g" -i "$file"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: edit $step $file had a problem."
-	exit 1
-fi
 
 file=/etc/dovecot/conf.d/10-mail.conf
 sed -E "s@^#?mail_location\s*=.*@mail_location = maildir:$mail_dir/%u/Maildir@g" -i "$file"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: edit $step $file had a problem."
-	exit 1
-fi
 
 file=/etc/dovecot/conf.d/10-auth.conf
 sed -E "s@^auth_mechanisms\s*=.*@auth_mechanisms = plain login@g" -i "$file"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: edit $step $file had a problem."
-	exit 1
-fi
 
 file="$repo_dir/install/dovecot.10-master.conf.diff"
 cd /etc/dovecot/conf.d && git apply "$file"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step applying $file had a problem."
-	exit 1
-fi
 
 service dovecot restart
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step restart had a problem."
-	exit 1
-fi
 
 postconf -e "smtpd_sasl_type = dovecot"
 # NOTE: smtpd_sasl_path is relative to /var/spool/postfix
@@ -437,19 +356,11 @@ postconf -e "smtpd_sasl_security_options = noanonymous"
 postconf -e "broken_sasl_auth_clients = yes"
 
 "$repo_dir/append-postconf.sh" smtpd_recipient_restrictions permit_sasl_authenticated
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step append postconf had a problem."
-	exit 1
-fi
 
 # A map of local users permitted to send emails using <user>@$domain.
 touch "$postfix_mydomain_map" \
 	&& chmod 644 "$postfix_mydomain_map" \
 	&& postmap "$postfix_mydomain_map"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step creating mydomain map had a problem."
-	exit 1
-fi
 
 # NOTE: smtpd_sasl_path is relative to /var/spool/postfix
 # -------------------------------------
@@ -466,16 +377,8 @@ submission inet n - - - - smtpd
   -o smtpd_sender_restrictions=reject_sender_login_mismatch
   -o smtpd_recipient_restrictions=reject_non_fqdn_recipient,reject_unknown_recipient_domain,permit_sasl_authenticated,reject
 EOPFMSASL
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step editing postfix/master.cf had a problem."
-	exit 1
-fi
 
 service postfix reload
-if [ $? -ne 0 ] ; then
-	echo "ERROR: postfix reload had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 
@@ -488,10 +391,7 @@ step="mutt"
 step_header "$step"
 
 apt-get -qq -y install mutt
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 # -------------------------------------

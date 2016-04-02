@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
 	echo "Usage:  php-build.sh"
@@ -25,84 +25,34 @@ if [ ! -d "$php_src_dir" ] ; then
 	new_install=1
 
 	mkdir -p "$php_src_dir"
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: problem making '$php_src_dir' directory."
-		echo "sudo should be used to run this script."
-		echo "If you're not using sudo, please try again while doing so."
-		exit 1
-	fi
 
 	cd "$php_src_dir"
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: could not cd into '$php_src_dir'."
-		exit 1
-	fi
 
 	git clone http://git.php.net/repository/php-src.git .
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: git clone had a problem."
-		exit 1
-	fi
 
 	git checkout -b PHP-5.5 origin/PHP-5.5
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: git checkout had a problem."
-		exit 1
-	fi
 else
 	new_install=0
 
 	cd "$php_src_dir"
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: could not cd into '$php_src_dir'."
-		exit 1
-	fi
 
 	touch .touch
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: sudo must be used to run this script."
-		exit 1
-	fi
 	rm .touch
 
 	if [ -f Makefile ] ; then
 		make clean
-		if [ $? -ne 0 ] ; then
-			echo "ERROR: make clean had a problem."
-			exit 1
-		fi
 	fi
 
 	./vcsclean
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: vcsclean had a problem."
-		exit 1
-	fi
 
 	git checkout -- .
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: git checkout had a problem."
-		exit 1
-	fi
 
 	git checkout PHP-5.5
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: git checkout had a problem."
-		exit 1
-	fi
 
 	git pull --rebase
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: git pull had a problem."
-		exit 1
-	fi
 fi
 
 ./buildconf --force
-if [ $? -ne 0 ] ; then
-	echo "ERROR: buildconf had a problem."
-	exit 1
-fi
 
 	#--enable-bcmath \
 ./configure \
@@ -123,42 +73,19 @@ fi
 	--with-xsl \
 	--with-zlib
 
-if [ $? -ne 0 ] ; then
-	echo "ERROR: configure had a problem."
-	exit 1
-fi
-
 make
-if [ $? -ne 0 ] ; then
-	echo "ERROR: make had a problem."
-	echo "  If you get \"virtual memory exhausted: Cannot allocate memory\","
-	echo "  make sure your swap space is running."
-	exit 1
-fi
-
 make install
-if [ $? -ne 0 ] ; then
-	echo "ERROR: make install had a problem."
-	echo "sudo should be used to run this script."
-	echo "If you're not using sudo, please try again while doing so."
-	exit 1
-fi
 
 if [ $new_install -eq 1 ] ; then
 	pecl install memcache
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: pecl install memcache had a problem."
-		exit 1
-	fi
 
+	set +e
 	grep -q memcache.so "$php_config_file_path/php.ini"
 	if [ $? -ne 0 ] ; then
+		set -e
 		echo "extension = memcache.so" >> "$php_config_file_path/php.ini"
 	fi
+	set -e
 else
 	pecl upgrade memcache
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: pecl upgrade memcache had a problem."
-		exit 1
-	fi
 fi

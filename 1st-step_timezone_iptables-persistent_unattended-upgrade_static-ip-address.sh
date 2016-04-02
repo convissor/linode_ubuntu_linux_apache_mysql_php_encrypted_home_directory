@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
 	echo "Usage:  1st-step_iptables-persistent_static-ip-address_unattended-upgrade.sh"
@@ -30,12 +30,6 @@ fi
 # INSTALL OUR UTILITY SCRIPTS ==========================
 
 "$repo_dir/install-utilities.sh"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: utility installer had a problem."
-	echo "You need to be running as root or via sudo."
-	echo "If you're not, please try again while doing so."
-	exit 1
-fi
 
 
 # TRACK ALL CONFIGURATION CHANGES =========================
@@ -44,16 +38,8 @@ step="git"
 step_header "$step"
 
 apt-get -qq -y install git-core git-doc
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
 
 cd /etc && git init && chmod 770 .git
-if [ $? -ne 0 ] ; then
-	echo "ERROR: git had a problem."
-	exit 1
-fi
 
 git config --global user.name root
 git config --global user.email root@$host.$domain
@@ -61,10 +47,6 @@ git config --global user.email root@$host.$domain
 echo "mtab" >> .gitignore \
 	&& git add --all \
 	&& commit_if_needed "$step"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: git had a problem."
-	exit 1
-fi
 
 ask_to_proceed "$step"
 
@@ -75,17 +57,6 @@ step="timezone"
 step_header "$step"
 
 echo "$continent/$city" > /etc/timezone
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step write had a problem."
-	echo "sudo should be used to run this script."
-	echo "If you're not using sudo, please try again while doing so."
-	exit 1
-fi
-dpkg-reconfigure -fnoninteractive tzdata
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step dpkg-reconfigure had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 
@@ -101,19 +72,12 @@ step="iptables-persistent"
 step_header "$step"
 
 apt-get -qq -y install iptables-persistent
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 dir=`dirname "$iptables_file"`
 if [ ! -d "$dir" ] ; then
 	mkdir -p "$dir"
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: $step creating directory had a problem."
-		exit 1
-	fi
 fi
 
 # -------------------------------------
@@ -147,18 +111,10 @@ cat > "$iptables_file" <<EOIPT
 COMMIT
 EOIPT
 # -------------------------------------
-if [ $? -ne 0 ] ; then
-	echo "ERROR: writing iptable rules had a problem."
-	exit 1
-fi
 
 cp "$iptables_file" "$ip6tables_file"
 
 /etc/init.d/iptables-persistent restart
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step restart had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 
@@ -171,12 +127,6 @@ step="upgrade"
 step_header "$step"
 
 apt-get -qq update && apt-get -qq -y upgrade
-if [ $? -ne 0 ] ; then
-	echo "ERROR: update or upgrade had a problem."
-	echo "sudo should be used to run this script."
-	echo "If you're not using sudo, please try again while doing so."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 
@@ -189,10 +139,7 @@ step="unattended-upgrades"
 step_header "$step"
 
 apt-get -qq -y install unattended-upgrades
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 file=/etc/apt/apt.conf.d/50unattended-upgrades
@@ -209,12 +156,15 @@ sed -E "s@^/*(\s*Unattended-Upgrade::Package-Blacklist.*)@\1\\n\\t\"unattended-u
 # Installer presently doesn't enable the package.  Do so manually.
 # https://bugs.launchpad.net/bugs/1007835
 file=/etc/apt/apt.conf.d/10periodic
+set +e
 grep -q "APT::Periodic::Unattended-Upgrade" "$file"
 if [ $? -eq 0 ] ; then
 	# Something is in there.  Make sure it's enabled.
+	set -e
 	sed -E 's@^/*(\s*APT::Periodic::Unattended-Upgrade\s+)"[0-9]+"@\1"1"@g' -i "$file"
 else
 	# Nothing is in there.  Add it.
+	set -e
 	echo 'APT::Periodic::Unattended-Upgrade "1";' >> "$file"
 fi
 

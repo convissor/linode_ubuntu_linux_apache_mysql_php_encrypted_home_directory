@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
 	echo "Usage:  this script is called by 2nd-step_run-sub-scripts.sh"
@@ -26,10 +26,7 @@ step="mysql"
 step_header "$step"
 
 apt-get -qq -y install mysql-client mysql-server
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 file=/etc/mysql/my.cnf
@@ -41,15 +38,12 @@ replace="[mysqld]\\ncharacter-set-server = utf8\\ncollation-server = utf8_bin\\n
 sed s/\\[mysqld\\]/"$replace"/g -i "$file"
 
 service mysql restart
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step restart had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 
 # Place this in a loop in case the user mistypes the password.
 loop_again=1
+set +e
 while [ $loop_again -eq 1 ] ; do
 	echo ""
 	echo "The next step will ask for your existing MySQL root password..."
@@ -69,6 +63,7 @@ EOPRIV
 		loop_again=0
 	fi
 done
+set -e
 
 # NOTE: our mysql-setup.sql is put in place by install-utilities.sh.
 
@@ -82,24 +77,13 @@ step_header "$step"
 
 apt-get -qq -y install apache2-mpm-itk apache2-doc apache2-utils \
 	libapache2-mod-xsendfile
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 a2enmod actions rewrite ssl
-if [ $? -ne 0 ] ; then
-	echo "ERROR: a2enmod had a problem."
-	exit 1
-fi
 
 # Disable default site.
 a2dissite default
-if [ $? -ne 0 ] ; then
-	echo "ERROR: disabling default apache site had a problem."
-	exit 1
-fi
 
 # Prevent POODLE attacks.
 file=/etc/apache2/mods-available/ssl.conf
@@ -167,10 +151,6 @@ EOACD
 # -------------------------------------
 
 service apache2 restart
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step restart had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 
@@ -183,10 +163,7 @@ step="memcache"
 step_header "$step"
 
 apt-get -qq -y install memcached
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 ask_to_proceed "$step"
@@ -239,10 +216,6 @@ apt-get -qq -y install \
   pkg-config po-debconf quilt re2c ttf-dejavu-core unixodbc unixodbc-dev \
   uuid-dev x11proto-core-dev x11proto-input-dev x11proto-kb-dev \
   xorg-sgml-doctools xtrans-dev zlib1g-dev
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step"
 
@@ -252,10 +225,6 @@ step="php compile"
 step_header "$step"
 
 mkdir -m 755 "$php_config_file_path"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: setting up $php_config_file_path had a problem."
-	exit 1
-fi
 
 # -------------------------------------
 cat > "$php_config_file_path/php.ini" <<EOINI
@@ -270,10 +239,6 @@ EOINI
 # -------------------------------------
 
 "$repo_dir/php-build.sh"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: php-build.sh had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 

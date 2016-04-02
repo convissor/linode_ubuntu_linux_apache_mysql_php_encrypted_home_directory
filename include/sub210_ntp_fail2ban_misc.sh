@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
 	echo "Usage:  this script is called by 2nd-step_run-sub-scripts.sh"
@@ -26,10 +26,7 @@ step="ntp"
 step_header "$step"
 
 apt-get -qq -y install ntp
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 ask_to_proceed "$step"
@@ -41,10 +38,7 @@ step="fail2ban"
 step_header "$step"
 
 apt-get -qq -y install fail2ban
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 file=/etc/fail2ban/jail.conf
@@ -95,10 +89,7 @@ apt-get -qq -y install \
 	sqlite3-doc \
 	sqlite \
 	sqlite-doc
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 ask_to_proceed "$step"

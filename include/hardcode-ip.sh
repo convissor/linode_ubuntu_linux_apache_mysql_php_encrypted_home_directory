@@ -15,11 +15,14 @@ if [ -z "$new_ip" ] ; then
 	exit 1
 fi
 
+set +e
 grep -q "$new_ip" "$interfaces_file"
 if [ $? -eq 0 ] ; then
+	set -e
 	echo "NOTE: '$new_ip' was already configured."
 	return
 fi
+set -e
 
 
 if [[ "$new_ip" == *":"* ]] ; then
@@ -40,14 +43,17 @@ echo "$new_ip  $host.$domain $host $main_domain" >> /etc/hosts
 
 
 initial_declaration="iface $network_interface $inet dhcp"
+set +e
 grep -q "$initial_declaration" "$interfaces_file"
 if [ $? -eq 0 ] ; then
+	set -e
 	new_iface=$network_interface
 
 	# Get rid of DHCP for this interface.
 	sed "s/$initial_declaration//g" -i "$interfaces_file"
 else
 	auto=`grep "auto $network_interface" "$interfaces_file"`
+	set -e
 	last_iface=${auto##*:}
 	if [ "$last_iface" == "auto $network_interface" ] ; then
 		count=1

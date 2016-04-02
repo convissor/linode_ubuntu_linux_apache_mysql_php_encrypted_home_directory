@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 if [[ $1 == "-h" || $1 == "--help" || $1 == "help" ]] ; then
 	echo "Usage:  this script is called by 2nd-step_run-sub-scripts.sh"
@@ -28,10 +28,7 @@ step="libpam-passwdqc"
 step_header "$step"
 
 apt-get -qq -y install libpam-passwdqc
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
+
 cd /etc && git add --all && commit_if_needed "$step"
 
 
@@ -51,10 +48,6 @@ if [ ! -d "$ssh_auth_key_dir" ] ; then
 		&& mkdir -m 700 "$ssh_auth_key_dir/$admin_user" \
 		&& cp "$repo_dir/install/authorized_keys" "$ssh_auth_key_dir/$admin_user" \
 		&& chmod 600 "$ssh_auth_key_dir/$admin_user/authorized_keys"
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: setting up ssh home dir had a problem."
-		exit 1
-	fi
 fi
 
 # Put authorized_keys outside of the encrypted home directories.
@@ -84,10 +77,6 @@ EOPROFILE
 # -------------------------------------
 
 service ssh reload
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step reload had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step"
 
@@ -113,10 +102,6 @@ mkdir -p "$mail_skel_dir/Maildir/cur" \
          "$mail_skel_dir/Maildir/.Spam/new" \
          "$mail_skel_dir/Maildir/.Spam/tmp" \
          "$mail_skel_dir/.spamassassin"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: mkdir had a problem."
-	exit 1
-fi
 
 touch "$mail_skel_dir/procmail.log"
 
@@ -128,10 +113,6 @@ LOGABSTRACT=all
 # Put me before rc.vacation but after everything else.
 INCLUDERC=$procmail_dir/rc.spamassassin
 EOUPRC
-if [ $? -ne 0 ] ; then
-	echo "ERROR: writing .procmailrc had a problem."
-	exit 1
-fi
 
 cat > "$mail_skel_dir/.spamassassin/user_prefs" <<EOSAUP
 # http://us.spamassassin.org/doc/Mail_SpamAssassin_Conf.html
@@ -146,16 +127,8 @@ rewrite_header Subject _SCORE(0)_ |
 # Which languages are legitimate for you.  See documentation for choices.
 ok_languages en
 EOSAUP
-if [ $? -ne 0 ] ; then
-	echo "ERROR: writing spamassassin user prefs had a problem."
-	exit 1
-fi
 
 mkdir -m 700 /etc/skel/.ssh
-if [ $? -ne 0 ] ; then
-	echo "ERROR: making ssh skel dir had a problem."
-	exit 1
-fi
 
 # Allow dots in file names.  Fix the regex too (Debian bug 630750).
 echo 'NAME_REGEX="^[a-z][-a-z0-9_.]*\$?$"' >> /etc/adduser.conf
@@ -175,10 +148,6 @@ EOPROFILE
 # -------------------------------------
 
 touch /etc/skel/.need-to-make-links
-if [ $? -ne 0 ] ; then
-	echo "ERROR: making need to make links skel file."
-	exit 1
-fi
 
 # NOTE: install-utilities.sh puts adduser scripts in place.
 
@@ -191,17 +160,9 @@ step="ecryptfs-utils"
 step_header "$step"
 
 apt-get -qq -y install ecryptfs-utils
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step install had a problem."
-	exit 1
-fi
 
 mkdir -p /home/.ecryptfs \
 	&& chmod 751 /home/.ecryptfs
-if [ $? -ne 0 ] ; then
-	echo "ERROR: mkdir/chmod /home/.ecryptfs had a problem."
-	exit 1
-fi
 
 
 # ADMIN USER ----------------------------------------------
@@ -216,34 +177,18 @@ read -e
 
 # Create admin user with encrypted home directory.
 adduser "$admin_user" --encrypt-home
-if [ $? -ne 0 ] ; then
-	echo "ERROR: adduser $admin_user had a problem."
-	exit 1
-fi
 
 # Give them the ability to sudo and manage the system.
 adduser "$admin_user" sudo
-if [ $? -ne 0 ] ; then
-	echo "ERROR: adduser $admin_user to admin group had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step pre-alias"
 
 # Send root email to the admin user.
 "$repo_dir/write-alias.sh" root "$root_emails_to"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: write alias had a problem."
-	exit 1
-fi
 
 # Forward admin email to another server, if desired.
 if [ -n "$admin_email_fwd" ] ; then
 	"$repo_dir/write-alias.sh" "$admin_user" "$admin_email_fwd"
-	if [ $? -ne 0 ] ; then
-		echo "ERROR: write alias had a problem."
-		exit 1
-	fi
 fi
 
 # Disable root access.
@@ -251,16 +196,8 @@ passwd -l root
 
 file=/etc/ssh/sshd_config
 sed -E "s/^#?\s*PermitRootLogin\s+(yes|no)/PermitRootLogin no/g" -i "$file"
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step reload had a problem."
-	exit 1
-fi
 
 service ssh reload
-if [ $? -ne 0 ] ; then
-	echo "ERROR: $step reload had a problem."
-	exit 1
-fi
 
 cd /etc && git add --all && commit_if_needed "$step final"
 

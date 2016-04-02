@@ -62,6 +62,7 @@ step="timezone"
 step_header "$step"
 
 echo "$continent/$city" > /etc/timezone
+dpkg-reconfigure -fnoninteractive tzdata
 
 cd /etc && git add --all && commit_if_needed "$step mods"
 

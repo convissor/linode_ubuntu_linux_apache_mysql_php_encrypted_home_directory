@@ -47,6 +47,7 @@ if [ ! -d "$ssh_auth_key_dir" ] ; then
 		&& chmod 600 "$ssh_auth_key_dir/root/authorized_keys" \
 		&& mkdir -m 700 "$ssh_auth_key_dir/$admin_user" \
 		&& cp "$repo_dir/install/authorized_keys" "$ssh_auth_key_dir/$admin_user" \
+		&& chown -R $admin_user:$admin_user "$ssh_auth_key_dir/$admin_user" \
 		&& chmod 600 "$ssh_auth_key_dir/$admin_user/authorized_keys"
 fi
 

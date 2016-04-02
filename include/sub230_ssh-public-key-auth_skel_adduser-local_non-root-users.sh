@@ -141,6 +141,7 @@ chmod 640 /etc/skel/.bash* /etc/skel/.profile
 cat >> "$etc_profile" <<EOPROFILE
 
 MAIL="$mail_dir/\$USER/Maildir"
+EDITOR=/usr/bin/vim
 
 if [ -f "\$HOME/.need-to-make-links" ] ; then
 	"$adduser_links_script"

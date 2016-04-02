@@ -34,19 +34,24 @@ fi
 
 # TRACK ALL CONFIGURATION CHANGES =========================
 
-step="git"
+step="put /etc under git control, install vim"
 step_header "$step"
 
-apt-get -qq -y install git-core git-doc
+if [[ -z $(which git) || -z $(which vim) ]] ; then
+	apt-get -qq update && apt-get -qq -y install git-core git-doc vim
+	echo "EDITOR=/usr/bin/vim" >> /root/.profile
+fi
 
-cd /etc && git init && chmod 770 .git
+if [[ ! -d /etc/.git ]] ; then
+	cd /etc && git init && chmod 770 .git
 
-git config --global user.name root
-git config --global user.email root@$host.$domain
+	git config --global user.name root
+	git config --global user.email root@$host.$domain
 
-echo "mtab" >> .gitignore \
-	&& git add --all \
-	&& commit_if_needed "$step"
+	echo "mtab" >> .gitignore \
+		&& git add --all \
+		&& commit_if_needed "$step"
+fi
 
 ask_to_proceed "$step"
 

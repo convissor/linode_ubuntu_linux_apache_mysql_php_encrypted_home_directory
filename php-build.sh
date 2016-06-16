@@ -30,7 +30,7 @@ if [ ! -d "$php_src_dir" ] ; then
 
 	git clone http://git.php.net/repository/php-src.git .
 
-	git checkout -b PHP-5.5 origin/PHP-5.5
+	git checkout -b PHP-5.6 origin/PHP-5.6
 else
 	new_install=0
 
@@ -47,7 +47,7 @@ else
 
 	git checkout -- .
 
-	git checkout PHP-5.5
+	git checkout PHP-5.6
 
 	git pull --rebase
 fi
